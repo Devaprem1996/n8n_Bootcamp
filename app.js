@@ -23,7 +23,7 @@ let userProgress = {
 let saveTimeout = null;
 const AUTO_SAVE_DELAY = 2000; // Save 2 seconds after last change
 
-// Bootcamp curriculum data
+// Bootcamp curriculum data with detailed visual descriptions
 const BOOTCAMP = {
   title: "N8N Bootcamp Hub",
   cohort: "2024 Automation Engineers",
@@ -31,65 +31,276 @@ const BOOTCAMP = {
     {
       day: 1,
       title: "N8N Basics & Setup",
-      concepts: ["Installation", "UI Overview", "First Workflow"],
+      duration: "2 hours",
       difficulty: 1,
-      duration: "2 hours"
+      topics: [
+        "Welcome & Course Overview",
+        "N8N Platform Introduction",
+        "Dashboard Tour",
+        "First Workflow Setup"
+      ],
+      concepts: ["Installation", "UI Overview", "First Workflow"],
+      visuals: [
+        "📊 Title slide with animated background",
+        "🔗 3-circle connected diagram: Connect → Automate → Empower",
+        "⚖️ Before/After comparison: Manual vs Automated work",
+        "🧠 3-Box Mental Model: Trigger → Transform → Action",
+        "📋 Setup options comparison table",
+        "🎨 Annotated dashboard tour with 4 colored sections",
+        "📧 First workflow diagram: Webhook → Email",
+        "✓ Learning outcomes checklist"
+      ],
+      keyOutcomes: [
+        "Understand N8N core concepts",
+        "Navigate the N8N dashboard",
+        "Create your first workflow",
+        "Connect basic nodes"
+      ],
+      homework: "Create a simple 2-node workflow (Webhook → Email)"
     },
     {
       day: 2,
-      title: "Building Your First Automation",
-      concepts: ["Triggers", "Actions", "Data Mapping"],
+      title: "Data Flow & Nodes",
+      duration: "3 hours",
       difficulty: 1,
-      duration: "3 hours"
+      topics: [
+        "JSON Data Structures",
+        "Node Input/Output",
+        "Data Transformation",
+        "Pinning Outputs"
+      ],
+      concepts: ["Data Mapping", "Node Types", "Output Handling"],
+      visuals: [
+        "🎨 Color-coded JSON example: keys in blue, values in green",
+        "🔀 Items split visualization: 1 input → 3 items flowing",
+        "📊 3-step node I/O process: Input → Process → Output",
+        "🔧 Set node transformation: messy data → clean data",
+        "📌 Pinning output visual: normal vs pinned workflow",
+        "👥 Practice workflow with step-by-step instructions"
+      ],
+      keyOutcomes: [
+        "Understand JSON data structures",
+        "Navigate node I/O interface",
+        "Transform data using Set node",
+        "Pin outputs for workflow control"
+      ],
+      homework: "Build workflow that splits and transforms data"
     },
     {
       day: 3,
-      title: "Working with APIs",
-      concepts: ["REST Calls", "Authentication", "Error Handling"],
+      title: "Triggers & Event Management",
+      duration: "4 hours",
       difficulty: 2,
-      duration: "4 hours"
+      topics: [
+        "5 Trigger Types",
+        "Webhook Configuration",
+        "Schedule Expressions",
+        "Trigger Decisions"
+      ],
+      concepts: ["Webhooks", "Schedules", "Forms", "Manual Triggers"],
+      visuals: [
+        "📦 5 Trigger Types in boxes: Webhook | Schedule | Form | Manual | Interval",
+        "  • Each with: description, use case, power rating ⭐⭐⭐",
+        "🔗 Webhook flow diagram: Form → Webhook URL → Workflow",
+        "⏱️ Cron Expression breakdown with visual syntax guide",
+        "🌳 Trigger Decision Tree flowchart: Does data arrive? Yes/No paths",
+        "⏰ Schedule testing setup with time estimates",
+        "📊 Difficulty ratings for each trigger type"
+      ],
+      keyOutcomes: [
+        "Choose correct trigger for use case",
+        "Set up webhooks correctly",
+        "Create cron schedules",
+        "Test trigger execution"
+      ],
+      homework: "Build workflow triggered on schedule (daily at 9 AM)"
     },
     {
       day: 4,
-      title: "Database Integration",
-      concepts: ["SQL Queries", "Data Operations", "CRUD"],
+      title: "Email & Slack Integration",
+      duration: "4 hours",
       difficulty: 2,
-      duration: "4 hours"
+      topics: [
+        "Email Personalization",
+        "Slack OAuth Flow",
+        "Conditional Routing",
+        "Message Formatting"
+      ],
+      concepts: ["Email Templates", "Slack API", "Switch Node", "Variables"],
+      visuals: [
+        "📧 Email template personalization: Raw → Output with highlighted variables",
+        "🔐 Slack OAuth 4-step flow: boxes showing process sequence",
+        "🔀 Conditional routing diagram: Switch node with 3 paths",
+        "💬 Slack message formatting: Plain text → Rich formatted",
+        "✉️ Real data examples with actual personalization",
+        "⏱️ Setup times: Email (15 min) | Slack (20 min)",
+        "📊 Complexity ratings and troubleshooting guide"
+      ],
+      keyOutcomes: [
+        "Set up email with personalization",
+        "Configure Slack OAuth",
+        "Route messages conditionally",
+        "Format messages for channels"
+      ],
+      homework: "Send personalized emails to 5 recipients from Slack"
     },
     {
       day: 5,
-      title: "Advanced Workflows",
-      concepts: ["Loops", "Conditionals", "Complex Logic"],
+      title: "Google Sheets Integration",
+      duration: "5 hours",
       difficulty: 2,
-      duration: "5 hours"
+      topics: [
+        "Sheets Benefits & Setup",
+        "OAuth Authentication",
+        "CRUD Operations",
+        "Data Mapping Modes"
+      ],
+      concepts: ["Google Sheets API", "Data Operations", "Mapping"],
+      visuals: [
+        "✅ 6 Benefits boxes: Storage | Integration | Sharing | Cost | Familiar | Reliable",
+        "🔐 OAuth 4-step process: boxes with checkmarks showing progress",
+        "📊 4 Operations in grid: Append | Update | Read | Delete",
+        "  • Each with: icon, use case, difficulty level",
+        "🔄 Mapping modes comparison: Automatic vs Manual side-by-side",
+        "📈 Data append complete flow: Input → Transform → Append → Result",
+        "🟢 Color-coded steps showing success path through system"
+      ],
+      keyOutcomes: [
+        "Authenticate with Google Sheets",
+        "Perform all CRUD operations",
+        "Map data between formats",
+        "Handle large datasets"
+      ],
+      homework: "Create workflow that reads, transforms, and appends to Sheets"
     },
     {
       day: 6,
-      title: "Error Handling & Debugging",
-      concepts: ["Error Management", "Logging", "Testing"],
-      difficulty: 2,
-      duration: "3 hours"
+      title: "Lead Management System (Project 1)",
+      duration: "6 hours",
+      difficulty: 3,
+      topics: [
+        "Project Architecture",
+        "Multi-Step Workflows",
+        "Error Handling",
+        "Testing & Debugging"
+      ],
+      concepts: ["Webhooks", "Google Sheets", "Email", "Slack"],
+      visuals: [
+        "🏗️ ARCHITECTURE: Complete 5-node workflow diagram",
+        "  • Webhook (🟦) → Set (🟧) → Sheets (🟨) → Email (🟩) → Slack (🟪)",
+        "🔄 Data flow through each node: inputs, transformations, outputs",
+        "✅ Outcomes visualized:",
+        "  • New row in Sheets ✓",
+        "  • Email notification sent ✓",
+        "  • Slack message posted ✓",
+        "📊 Node-by-node breakdown with data samples",
+        "🧪 Testing scenarios and validation checklist"
+      ],
+      keyOutcomes: [
+        "Build 5-node workflow",
+        "Handle multi-format outputs",
+        "Validate data flow",
+        "Deploy and test in production"
+      ],
+      homework: "Process 10 test leads through complete system"
     },
     {
       day: 7,
-      title: "Real-World Project Part 1",
-      concepts: ["Planning", "Architecture", "Implementation"],
+      title: "Invoice Generation System (Project 2)",
+      duration: "6 hours",
       difficulty: 3,
-      duration: "6 hours"
+      topics: [
+        "Complex Data Transformation",
+        "PDF Generation",
+        "Calculation Logic",
+        "Storage & Delivery"
+      ],
+      concepts: ["Forms", "Calculations", "PDF", "Email"],
+      visuals: [
+        "📋 PROCESS FLOW: 6-step progression",
+        "  1️⃣ Form Submission → 2️⃣ Extract Data → 3️⃣ Calculate Total",
+        "  4️⃣ Format PDF → 5️⃣ Store in Drive → 6️⃣ Send Email",
+        "🔢 Each step with: icon, description, error handling",
+        "📊 Data transformation shown at each stage",
+        "💰 Sample calculations with visual breakdown",
+        "📄 Output examples: PDF templates and email samples",
+        "⚙️ Configuration guide for each node"
+      ],
+      keyOutcomes: [
+        "Build calculation workflows",
+        "Generate formatted documents",
+        "Implement business logic",
+        "Automate document delivery"
+      ],
+      homework: "Generate invoices for 3 mock customers"
     },
     {
       day: 8,
-      title: "Real-World Project Part 2",
-      concepts: ["Refinement", "Testing", "Deployment"],
+      title: "Daily Report Aggregation (Project 3)",
+      duration: "6 hours",
       difficulty: 3,
-      duration: "6 hours"
+      topics: [
+        "Multi-Source Integration",
+        "Data Consolidation",
+        "Report Formatting",
+        "Scheduling & Automation"
+      ],
+      concepts: ["Multiple APIs", "Data Merging", "Formatting", "Scheduling"],
+      visuals: [
+        "🌐 THREE DATA SOURCES CONVERGING:",
+        "  📊 Google Sheets (left) → Sales Data",
+        "  🔗 REST API (center) → Performance Metrics",
+        "  💾 Database (right) → Customer Info",
+        "       ⬇️ ⬇️ ⬇️",
+        "🎯 CONSOLIDATION POINT: Merge & Transform",
+        "  ⬇️",
+        "📈 Format → Email → Delivered",
+        "🟢 Visual showing data merging process",
+        "📊 Before/After report examples",
+        "⏰ Scheduling strategy for daily execution",
+        "📉 Error handling for missing sources"
+      ],
+      keyOutcomes: [
+        "Integrate multiple data sources",
+        "Consolidate data efficiently",
+        "Format professional reports",
+        "Schedule recurring workflows"
+      ],
+      homework: "Create automated daily report with 3+ data sources"
     },
     {
       day: 9,
-      title: "Capstone & Presentation",
-      concepts: ["Final Review", "Documentation", "Presentation"],
+      title: "Error Handling & Capstone",
+      duration: "4 hours",
       difficulty: 3,
-      duration: "4 hours"
+      topics: [
+        "Error Handling Patterns",
+        "Retry Logic",
+        "Capstone Project",
+        "Celebration & Next Steps"
+      ],
+      concepts: ["Error Catching", "Retry Logic", "Logging", "Monitoring"],
+      visuals: [
+        "🛡️ ERROR HANDLING FLOW DIAGRAM:",
+        "  • Normal Path (✅) vs Error Path (❌)",
+        "  • Each with outcomes and next steps",
+        "🔄 RETRY LOGIC VISUAL:",
+        "  Attempt 1 (❌) → Attempt 2 (❌) → Attempt 3 (✅) → Success 🎉",
+        "🌳 ERROR DECISION FLOWCHART:",
+        "  • Which error handling method to use?",
+        "  • Decision tree with 4 paths",
+        "📊 Capstone project overview",
+        "✅ Success criteria checklist",
+        "🎊 Celebration slide with achievements",
+        "🚀 Next steps & advanced topics"
+      ],
+      keyOutcomes: [
+        "Handle workflow errors gracefully",
+        "Implement retry strategies",
+        "Log and monitor workflows",
+        "Build production-ready systems"
+      ],
+      homework: "Complete capstone: Build error-resistant 4+ node workflow"
     }
   ]
 };
@@ -226,9 +437,41 @@ function renderMainApp() {
               <div class="day-card ${userProgress.completedTasks[index] ? 'completed' : ''}">
                 <div class="day-number">Day ${item.day}</div>
                 <h3>${item.title}</h3>
-                <div class="concepts">${item.concepts.join(' • ')}</div>
-                <span class="difficulty difficulty-${item.difficulty}">${item.duration}</span>
-                <div class="checkbox-container">
+                
+                <div class="day-info">
+                  <span class="duration">⏱️ ${item.duration}</span>
+                  <span class="difficulty-badge difficulty-${item.difficulty}">
+                    ${'⭐'.repeat(item.difficulty)} Level ${item.difficulty}
+                  </span>
+                </div>
+                
+                <div class="topics">
+                  <strong>Topics:</strong>
+                  <ul>
+                    ${item.topics.map(t => `<li>${t}</li>`).join('')}
+                  </ul>
+                </div>
+                
+                <div class="visuals">
+                  <strong>Visual Learning:</strong>
+                  <ul class="visual-list">
+                    ${item.visuals.slice(0, 3).map(v => `<li>${v}</li>`).join('')}
+                    ${item.visuals.length > 3 ? `<li>... and ${item.visuals.length - 3} more visuals</li>` : ''}
+                  </ul>
+                </div>
+                
+                <div class="outcomes">
+                  <strong>Key Outcomes:</strong>
+                  <ul>
+                    ${item.keyOutcomes.map(o => `<li>✓ ${o}</li>`).join('')}
+                  </ul>
+                </div>
+                
+                <div class="homework">
+                  📝 <strong>Homework:</strong> ${item.homework}
+                </div>
+                
+                <div class="checkbox-container" style="margin-top: 12px;">
                   <input 
                     type="checkbox" 
                     ${userProgress.completedTasks[index] ? 'checked' : ''}
@@ -251,14 +494,24 @@ function renderMainApp() {
               return `
                 <div class="assessment-item">
                   <div class="assessment-header">
-                    <h3>Day ${item.day}: ${item.title}</h3>
+                    <div>
+                      <h3>Day ${item.day}: ${item.title}</h3>
+                      <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                        ${item.topics.join(' • ')}
+                      </p>
+                    </div>
                     <span class="status ${isCompleted ? 'done' : 'pending'}">
                       ${isCompleted ? '✓ Done' : '○ Pending'}
                     </span>
                   </div>
+                  
+                  <div class="assessment-homework" style="margin: 12px 0; padding: 12px; background: #f1f5f9; border-left: 3px solid #667eea; border-radius: 4px; font-size: 12px;">
+                    <strong>📝 Homework:</strong> ${item.homework}
+                  </div>
+                  
                   <textarea 
                     class="assessment-textarea"
-                    placeholder="Write your notes, what you learned, challenges faced..."
+                    placeholder="Write your notes, what you learned, challenges faced, key takeaways..."
                     onchange="window.updateDayNotes(${index}, this.value)"
                     onblur="window.autoSaveProgress()"
                   >${notes}</textarea>

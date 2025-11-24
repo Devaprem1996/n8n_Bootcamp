@@ -271,6 +271,8 @@
       padding: 20px;
       transition: all 0.3s;
       background: #f8fafc;
+      max-height: 600px;
+      overflow-y: auto;
     }
 
     .day-card.completed {
@@ -294,8 +296,117 @@
 
     .day-card h3 {
       font-size: 16px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       color: #0f172a;
+    }
+
+    .day-info {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+    }
+
+    .duration {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .difficulty-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .difficulty-badge.difficulty-1 {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .difficulty-badge.difficulty-2 {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .difficulty-badge.difficulty-3 {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .topics, .visuals, .outcomes, .homework {
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .topics strong, .visuals strong, .outcomes strong, .homework strong {
+      display: block;
+      color: #0f172a;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .topics ul, .visuals ul, .outcomes ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    .topics li, .outcomes li {
+      color: #64748b;
+      margin-bottom: 4px;
+      font-size: 12px;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .topics li:before {
+      content: "•";
+      position: absolute;
+      left: 6px;
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .outcomes li:before {
+      content: "✓";
+      position: absolute;
+      left: 2px;
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .visual-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .visual-list li {
+      color: #64748b;
+      margin-bottom: 4px;
+      font-size: 11px;
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.4;
+    }
+
+    .visual-list li:before {
+      content: "🎨";
+      position: absolute;
+      left: 0;
+    }
+
+    .homework {
+      background: #f1f5f9;
+      padding: 10px;
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+      color: #475569;
+      font-size: 12px;
     }
 
     .concepts {
