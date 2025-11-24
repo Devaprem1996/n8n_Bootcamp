@@ -105,6 +105,9 @@ async function handleGoogleLogin() {
   // Redirect will happen automatically via OAuth flow
 }
 
+// Expose to global scope for onclick handlers
+window.handleGoogleLogin = handleGoogleLogin;
+
 /**
  * Render main application
  */
@@ -387,5 +390,12 @@ async function handleLogout() {
   await signOut();
   window.location.reload();
 }
+
+// Expose all functions to global scope for onclick handlers in HTML
+window.handleLogout = handleLogout;
+window.switchTab = switchTab;
+window.exportJSON = exportJSON;
+window.exportCSV = exportCSV;
+window.saveToDB = saveToDB;
 
 // END OF APP.JS
