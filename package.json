@@ -1,0 +1,24 @@
+{
+  "name": "n8n-bootcamp-hub",
+  "version": "1.0.0",
+  "description": "N8N Bootcamp Progress Tracker with Supabase + Google Auth",
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "deploy:vercel": "vercel",
+    "deploy:netlify": "netlify deploy"
+  },
+  "keywords": [
+    "n8n",
+    "bootcamp",
+    "supabase",
+    "google-auth",
+    "progress-tracking"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+}
