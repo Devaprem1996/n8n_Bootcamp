@@ -24,15 +24,15 @@ Copy and paste this SQL into the SQL editor and click **RUN**:
 ```sql
 -- Create intern_progress table
 CREATE TABLE IF NOT EXISTS intern_progress (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   intern_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   user_email VARCHAR(255) NOT NULL,
-  completed_tasks JSONB DEFAULT '[]'::jsonb,
-  task_notes JSONB DEFAULT '{}'::jsonb,
-  progress_percent INTEGER DEFAULT 0,
-  cohort VARCHAR(100) DEFAULT 'default',
-  created_at TIMESTAMP DEFAULT NOW(),
-  last_updated TIMESTAMP DEFAULT NOW(),
+  completed_tasks JSONB DEFAULT '[]'::jsonb NOT NULL,
+  task_notes JSONB DEFAULT '{}'::jsonb NOT NULL,
+  progress_percent INTEGER DEFAULT 0 NOT NULL,
+  cohort VARCHAR(100) DEFAULT 'default' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(intern_id)
 );
 

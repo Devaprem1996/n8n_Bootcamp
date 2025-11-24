@@ -173,19 +173,25 @@ export async function isAuthenticated() {
 export async function saveProgress(internId, progressData) {
   try {
     const sb = await initSupabase()
+    console.log('📝 Saving to Supabase with data:', {
+      completed_tasks: progressData.completedTasks,
+      task_notes: progressData.taskNotes
+    })
+    
     const { data, error } = await sb
       .from('intern_progress')
       .upsert({
         intern_id: internId,
         user_email: progressData.email,
-        completed_tasks: progressData.completedTasks,
-        task_notes: progressData.taskNotes,
+        completed_tasks: progressData.completedTasks,  // Will be auto-converted to JSONB
+        task_notes: progressData.taskNotes,              // Will be auto-converted to JSONB
         progress_percent: progressData.progressPercent,
         last_updated: new Date().toISOString(),
         cohort: progressData.cohort || 'default'
       }, { onConflict: 'intern_id' })
     
     if (error) throw error
+    console.log('✅ Saved successfully:', data)
     return { success: true, data }
   } catch (error) {
     console.error('❌ Error saving progress:', error)
@@ -206,7 +212,24 @@ export async function loadProgress(internId) {
       .single()
     
     if (error && error.code !== 'PGRST116') throw error
-    return { success: true, data: data || null }
+    
+    if (data) {
+      console.log('📂 Loaded raw data from DB:', data)
+      // Ensure completed_tasks and task_notes are proper arrays/objects
+      const processedData = {
+        ...data,
+        completed_tasks: Array.isArray(data.completed_tasks) 
+          ? data.completed_tasks.map(t => t === true || t === 'true' || t === 1)
+          : Array(9).fill(false),
+        task_notes: typeof data.task_notes === 'object' && data.task_notes !== null
+          ? data.task_notes
+          : {}
+      }
+      console.log('✅ Processed data:', processedData)
+      return { success: true, data: processedData }
+    }
+    
+    return { success: true, data: null }
   } catch (error) {
     console.error('❌ Error loading progress:', error)
     return { success: false, error: error.message }
