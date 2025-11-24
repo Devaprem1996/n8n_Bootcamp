@@ -453,7 +453,6 @@ function renderMainApp() {
                 </div>
                 
                 <div class="visuals">
-                  <strong>Visual Learning:</strong>
                   <ul class="visual-list">
                     ${item.visuals.slice(0, 3).map(v => `<li>${v}</li>`).join('')}
                     ${item.visuals.length > 3 ? `<li>... and ${item.visuals.length - 3} more visuals</li>` : ''}
