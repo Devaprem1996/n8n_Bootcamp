@@ -28,6 +28,10 @@ let userProgress = {
   cohort: 'default'
 };
 
+// Helper functions for DOM selection
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => document.querySelectorAll(selector);
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', initializeApp);
 
@@ -347,9 +351,12 @@ function renderMainApp() {
     </div>
   `;
   
-  renderLearningPath();
-  renderAssessment();
-  renderPerformance();
+  // Wait for DOM to update before rendering content
+  setTimeout(() => {
+    renderLearningPath();
+    renderAssessment();
+    renderPerformance();
+  }, 0);
 }
 
 /**
@@ -487,16 +494,29 @@ function updateProgress() {
  * Load user progress from Supabase
  */
 async function loadUserProgress() {
-  const { loadProgress } = await import('./supabase-config.js');
-  const result = await loadProgress(currentUser.id);
-  
-  if (result.success && result.data) {
-    userProgress = {
-      completedTasks: result.data.completed_tasks || Array(9).fill(false),
-      taskNotes: result.data.task_notes || {},
-      progressPercent: result.data.progress_percent || 0,
-      cohort: result.data.cohort || 'default'
-    };
+  try {
+    const { loadProgress } = await import('./supabase-config.js');
+    const result = await loadProgress(currentUser.id);
+    
+    console.log('📊 Loaded progress:', result)
+    
+    if (result.success && result.data) {
+      userProgress = {
+        completedTasks: result.data.completed_tasks || Array(9).fill(false),
+        taskNotes: result.data.task_notes || {},
+        progressPercent: result.data.progress_percent || 0,
+        cohort: result.data.cohort || 'default'
+      };
+      console.log('✅ User progress loaded:', userProgress)
+    } else {
+      console.log('ℹ️ No previous progress found, using defaults')
+    }
+    
+    // Ensure content is rendered
+    updateProgress();
+  } catch (error) {
+    console.error('❌ Error loading progress:', error)
+    // Still update progress with defaults
     updateProgress();
   }
 }
