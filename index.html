@@ -5,10 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N8N Bootcamp Hub - Progress Tracker</title>
   <script>
-    // Supabase credentials - Configure these with your actual values
-    // For Vercel: Set these as environment variables in your Vercel dashboard
-    window.SUPABASE_URL = 'https://your-project.supabase.co'
-    window.SUPABASE_ANON_KEY = 'your-anon-key-here'
+    // Supabase credentials - UPDATE THESE WITH YOUR ACTUAL VALUES
+    // 1. Go to https://supabase.com and open your project
+    // 2. Click "Settings" → "API" to find your credentials
+    // 3. Copy your Project URL and Anon Key below
+    
+    // Replace 'your-project.supabase.co' with your actual project URL
+    // Replace 'your-anon-key-here' with your actual anon key
+    
+    window.SUPABASE_URL = 'https://your-project.supabase.co'  // Change this!
+    window.SUPABASE_ANON_KEY = 'your-anon-key-here'  // Change this!
+    
+    // For Vercel deployment: Set these as environment variables in your Vercel dashboard instead
+    // Then Vercel will inject them at build time
   </script>
   <style>
     * {
