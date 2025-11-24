@@ -72,22 +72,22 @@ function renderLoginScreen() {
         <p>Track your learning progress and master N8N automation</p>
         
         <!-- Google Sign-in -->
-        <button class="btn-google" onclick="handleGoogleLogin()">
+        <button class="btn-google" onclick="handleGoogleLogin()" style="opacity: 0.6;" title="Configure Supabase OAuth first">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"></circle>
           </svg>
-          Sign in with Google
+          Sign in with Google (Setup Required)
         </button>
         
         <!-- Divider -->
         <div style="margin: 24px 0; display: flex; align-items: center; gap: 12px;">
           <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-          <span style="color: #64748b; font-size: 12px;">or</span>
+          <span style="color: #64748b; font-size: 12px;">Recommended: Use Email/Password</span>
           <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
         </div>
         
         <!-- Email/Password Login -->
-        <div id="email-login-form" style="display: none;">
+        <div id="email-login-form">
           <input 
             type="email" 
             id="login-email" 
@@ -115,15 +115,6 @@ function renderLoginScreen() {
             Create Account
           </button>
         </div>
-        
-        <!-- Toggle Email Login -->
-        <button 
-          class="btn-google" 
-          onclick="toggleEmailLogin()" 
-          style="background: #666; margin-bottom: 16px;"
-        >
-          Use Email/Password Instead
-        </button>
         
         <div class="login-info">
           <h3>About this bootcamp:</h3>
