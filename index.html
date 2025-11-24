@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N8N Bootcamp Hub - Progress Tracker</title>
+  <script>
+    // Set Supabase credentials from environment variables
+    window.SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
+    window.SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'your-anon-key-here'
+  </script>
   <style>
     * {
       margin: 0;
@@ -516,40 +521,3 @@
   <script type="module" src="app.js"></script>
 </body>
 </html>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont/dist/tabler-icons.min.css">
-  <style>
-    /* Perplexity Design System */
-:root {
-  --color-white: rgba(255, 255, 255, 1);
-  --color-black: rgba(0, 0, 0, 1);
-  --color-cream-50: rgba(252, 252, 249, 1);
-  --color-cream-100: rgba(255, 255, 253, 1);
-  --color-gray-200: rgba(245, 245, 245, 1);
-  --color-gray-300: rgba(167, 169, 169, 1);
-  --color-charcoal-700: rgba(31, 33, 33, 1);
-  --color-charcoal-800: rgba(38, 40, 40, 1);
-  --color-slate-900: rgba(19, 52, 59, 1);
-  --color-slate-500: rgba(98, 108, 113, 1);
-  --color-teal-300: rgba(50, 184, 198, 1);
-  --color-teal-500: rgba(33, 128, 141, 1);
-  --color-teal-600: rgba(29, 116, 128, 1);
-  --color-background: var(--color-cream-50);
-  --color-surface: var(--color-cream-100);
-  --color-text: var(--color-slate-900);
-  --color-text-secondary: var(--color-slate-500);
-  --color-primary: var(--color-teal-500);
-  --color-primary-hover: var(--color-teal-600);
-  --font-family-base: 'FKGroteskNeue', 'Geist', 'Inter', sans-serif;
-  --font-size-base: 14px;
-  --space-8: 8px;
-  --space-16: 16px;
-  --space-24: 24px;
-  --radius-base: 8px;
-  --radius-lg: 12px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
-  
-  /* Custom variables */
-  --primary-blue: #3B82F6;
-  --secondary-purple: #8B5CF6;

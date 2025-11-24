@@ -29,15 +29,15 @@ let userProgress = {
 };
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
-  await initializeApp();
-});
+document.addEventListener('DOMContentLoaded', initializeApp);
 
 /**
  * Initialize application and check authentication
  */
 async function initializeApp() {
-  const { getCurrentUser } = await import('./supabase-config.js');
+  // Use dynamic import to load supabase config
+  const supabaseModule = await import('./supabase-config.js');
+  const getCurrentUser = supabaseModule.getCurrentUser;
   
   currentUser = await getCurrentUser();
   
