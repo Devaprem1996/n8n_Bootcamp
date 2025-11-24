@@ -23,6 +23,9 @@ async function initSupabase() {
   return supabase
 }
 
+// Export initSupabase for auth state listeners
+export { initSupabase }
+
 /**
  * Google Sign-in
  */

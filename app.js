@@ -37,15 +37,46 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 async function initializeApp() {
   try {
     console.log('🚀 Initializing app...')
+    console.log('📍 Current URL:', window.location.href)
     
     // Use dynamic import to load supabase config
     const supabaseModule = await import('./supabase-config.js')
     console.log('✅ Supabase module loaded')
     
     const getCurrentUser = supabaseModule.getCurrentUser
+    const initSupabase = supabaseModule.initSupabase
+    
+    // Check if this is an OAuth callback (has # in URL)
+    const isOAuthCallback = window.location.hash.includes('access_token')
+    if (isOAuthCallback) {
+      console.log('🔐 OAuth callback detected, waiting for session...')
+    }
+    
+    // Wait for OAuth callback to process
+    await new Promise(resolve => setTimeout(resolve, 800))
     
     currentUser = await getCurrentUser()
-    console.log('✅ User check complete:', currentUser ? 'Logged in' : 'Not logged in')
+    console.log('✅ User check complete:', currentUser ? `Logged in as ${currentUser.email}` : 'Not logged in')
+    
+    // Set up auth state listener to handle OAuth redirects
+    if (initSupabase && typeof initSupabase === 'function') {
+      try {
+        const sb = await initSupabase()
+        sb.auth.onAuthStateChange((event, session) => {
+          console.log('🔐 Auth state changed:', event, session?.user?.email)
+          if (session && session.user) {
+            currentUser = session.user
+            console.log('✅ User authenticated via OAuth:', currentUser.email)
+            // Clear the hash/fragment to clean URL
+            window.history.replaceState({}, document.title, window.location.pathname)
+            renderMainApp()
+            loadUserProgress()
+          }
+        })
+      } catch (e) {
+        console.log('ℹ️ Auth state listener setup skipped:', e.message)
+      }
+    }
     
     if (!currentUser) {
       renderLoginScreen()
