@@ -525,16 +525,32 @@ async function loadUserProgress() {
  * Save progress to Supabase
  */
 async function saveToDB() {
-  const { saveProgress } = await import('./supabase-config.js');
-  const result = await saveProgress(currentUser.id, {
-    ...userProgress,
-    email: currentUser.email
-  });
-  
-  if (result.success) {
-    alert('✓ Progress saved successfully!');
-  } else {
-    alert('✗ Error saving progress: ' + result.error);
+  try {
+    console.log('💾 Saving progress to database...')
+    console.log('📊 Data to save:', {
+      userId: currentUser.id,
+      email: currentUser.email,
+      completedTasks: userProgress.completedTasks,
+      taskNotes: userProgress.taskNotes,
+      progressPercent: userProgress.progressPercent
+    })
+    
+    const { saveProgress } = await import('./supabase-config.js');
+    const result = await saveProgress(currentUser.id, {
+      ...userProgress,
+      email: currentUser.email
+    });
+    
+    if (result.success) {
+      console.log('✅ Save successful:', result.data)
+      alert('✓ Progress saved successfully!');
+    } else {
+      console.error('❌ Save failed:', result.error)
+      alert('✗ Error saving progress:\n\n' + result.error + '\n\nMake sure:\n1. Database table exists (see DATABASE_SETUP.md)\n2. Row Level Security policies are configured\n3. You are logged in');
+    }
+  } catch (error) {
+    console.error('❌ Save exception:', error)
+    alert('✗ Error saving progress:\n\n' + error.message + '\n\nPlease check DATABASE_SETUP.md for instructions.');
   }
 }
 
