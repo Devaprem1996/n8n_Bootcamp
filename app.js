@@ -35,17 +35,28 @@ document.addEventListener('DOMContentLoaded', initializeApp);
  * Initialize application and check authentication
  */
 async function initializeApp() {
-  // Use dynamic import to load supabase config
-  const supabaseModule = await import('./supabase-config.js');
-  const getCurrentUser = supabaseModule.getCurrentUser;
-  
-  currentUser = await getCurrentUser();
-  
-  if (!currentUser) {
-    renderLoginScreen();
-  } else {
-    renderMainApp();
-    await loadUserProgress();
+  try {
+    console.log('🚀 Initializing app...')
+    
+    // Use dynamic import to load supabase config
+    const supabaseModule = await import('./supabase-config.js')
+    console.log('✅ Supabase module loaded')
+    
+    const getCurrentUser = supabaseModule.getCurrentUser
+    
+    currentUser = await getCurrentUser()
+    console.log('✅ User check complete:', currentUser ? 'Logged in' : 'Not logged in')
+    
+    if (!currentUser) {
+      renderLoginScreen()
+    } else {
+      renderMainApp()
+      await loadUserProgress()
+    }
+  } catch (error) {
+    console.error('❌ Initialization error:', error)
+    // Fallback to login screen on error
+    renderLoginScreen()
   }
 }
 
@@ -53,6 +64,7 @@ async function initializeApp() {
  * Render login screen with Google auth
  */
 function renderLoginScreen() {
+  console.log('📱 Rendering login screen')
   document.body.innerHTML = `
     <div class="login-container">
       <div class="login-card">
