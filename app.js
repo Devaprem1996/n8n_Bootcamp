@@ -1,25 +1,16 @@
-/**
- * N8N Bootcamp - Supabase + Google Auth Version
- * Clean, minimal UI focused on performance tracking
- * Deploy to Vercel/Netlify
- */
+// Import Supabase configuration
+import { 
+  getCurrentUser, 
+  signInWithGoogle, 
+  signUpWithEmail, 
+  signInWithEmail,
+  saveProgress,
+  loadProgress,
+  exportProgressJSON,
+  exportProgressCSV
+} from './supabase-config.js';
 
-// Bootcamp curriculum data
-const BOOTCAMP = {
-  days: [
-    { day: 1, title: "N8N Basics & Setup", concepts: ["N8N Interface", "Nodes & Connections"], difficulty: 1 },
-    { day: 2, title: "Triggers & Workflows", concepts: ["Webhook Triggers", "Manual Triggers"], difficulty: 1 },
-    { day: 3, title: "HTTP Integration", concepts: ["HTTP Requests", "REST APIs"], difficulty: 2 },
-    { day: 4, title: "Data Transformation", concepts: ["Function Nodes", "Data Mapping"], difficulty: 2 },
-    { day: 5, title: "Database Operations", concepts: ["SQL Queries", "Data Storage"], difficulty: 2 },
-    { day: 6, title: "Lead Management", concepts: ["CRM Integration", "Pipeline Automation"], difficulty: 2 },
-    { day: 7, title: "Invoice Automation", concepts: ["PDF Generation", "Email Sending"], difficulty: 3 },
-    { day: 8, title: "Report Generation", concepts: ["Data Aggregation", "Export Options"], difficulty: 3 },
-    { day: 9, title: "Capstone Project", concepts: ["Full Workflow", "Real-world Scenario"], difficulty: 3 }
-  ]
-};
-
-// State management
+// Global state
 let currentUser = null;
 let userProgress = {
   completedTasks: Array(9).fill(false),
@@ -28,477 +19,439 @@ let userProgress = {
   cohort: 'default'
 };
 
-// Helper functions for DOM selection
+// Auto-save settings
+let saveTimeout = null;
+const AUTO_SAVE_DELAY = 2000; // Save 2 seconds after last change
+
+// Bootcamp curriculum data
+const BOOTCAMP = {
+  title: "N8N Bootcamp Hub",
+  cohort: "2024 Automation Engineers",
+  days: [
+    {
+      day: 1,
+      title: "N8N Basics & Setup",
+      concepts: ["Installation", "UI Overview", "First Workflow"],
+      difficulty: 1,
+      duration: "2 hours"
+    },
+    {
+      day: 2,
+      title: "Building Your First Automation",
+      concepts: ["Triggers", "Actions", "Data Mapping"],
+      difficulty: 1,
+      duration: "3 hours"
+    },
+    {
+      day: 3,
+      title: "Working with APIs",
+      concepts: ["REST Calls", "Authentication", "Error Handling"],
+      difficulty: 2,
+      duration: "4 hours"
+    },
+    {
+      day: 4,
+      title: "Database Integration",
+      concepts: ["SQL Queries", "Data Operations", "CRUD"],
+      difficulty: 2,
+      duration: "4 hours"
+    },
+    {
+      day: 5,
+      title: "Advanced Workflows",
+      concepts: ["Loops", "Conditionals", "Complex Logic"],
+      difficulty: 2,
+      duration: "5 hours"
+    },
+    {
+      day: 6,
+      title: "Error Handling & Debugging",
+      concepts: ["Error Management", "Logging", "Testing"],
+      difficulty: 2,
+      duration: "3 hours"
+    },
+    {
+      day: 7,
+      title: "Real-World Project Part 1",
+      concepts: ["Planning", "Architecture", "Implementation"],
+      difficulty: 3,
+      duration: "6 hours"
+    },
+    {
+      day: 8,
+      title: "Real-World Project Part 2",
+      concepts: ["Refinement", "Testing", "Deployment"],
+      difficulty: 3,
+      duration: "6 hours"
+    },
+    {
+      day: 9,
+      title: "Capstone & Presentation",
+      concepts: ["Final Review", "Documentation", "Presentation"],
+      difficulty: 3,
+      duration: "4 hours"
+    }
+  ]
+};
+
+// DOM Helpers
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', initializeApp);
-
 /**
- * Initialize application and check authentication
+ * Initialize the application
  */
 async function initializeApp() {
   try {
-    console.log('🚀 Initializing app...')
-    console.log('📍 Current URL:', window.location.href)
+    console.log('🚀 Initializing N8N Bootcamp Hub...')
     
-    // Use dynamic import to load supabase config
-    const supabaseModule = await import('./supabase-config.js')
-    console.log('✅ Supabase module loaded')
+    // Check if user is already logged in
+    const user = await getCurrentUser();
     
-    const getCurrentUser = supabaseModule.getCurrentUser
-    const initSupabase = supabaseModule.initSupabase
-    
-    // Check if this is an OAuth callback (has # in URL)
-    const isOAuthCallback = window.location.hash.includes('access_token')
-    if (isOAuthCallback) {
-      console.log('🔐 OAuth callback detected, waiting for session...')
-    }
-    
-    // Wait for OAuth callback to process
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    currentUser = await getCurrentUser()
-    console.log('✅ User check complete:', currentUser ? `Logged in as ${currentUser.email}` : 'Not logged in')
-    
-    // Set up auth state listener to handle OAuth redirects
-    if (initSupabase && typeof initSupabase === 'function') {
-      try {
-        const sb = await initSupabase()
-        sb.auth.onAuthStateChange((event, session) => {
-          console.log('🔐 Auth state changed:', event, session?.user?.email)
-          if (session && session.user) {
-            currentUser = session.user
-            console.log('✅ User authenticated via OAuth:', currentUser.email)
-            // Clear the hash/fragment to clean URL
-            window.history.replaceState({}, document.title, window.location.pathname)
-            renderMainApp()
-            loadUserProgress()
-          }
-        })
-      } catch (e) {
-        console.log('ℹ️ Auth state listener setup skipped:', e.message)
-      }
-    }
-    
-    if (!currentUser) {
-      renderLoginScreen()
+    if (user) {
+      console.log('✅ User logged in:', user.email)
+      currentUser = user;
+      await loadUserProgress();
+      renderMainApp();
     } else {
-      renderMainApp()
-      await loadUserProgress()
+      console.log('ℹ️ No user logged in, showing login screen')
+      renderLoginScreen();
     }
   } catch (error) {
-    console.error('❌ Initialization error:', error)
-    // Fallback to login screen on error
-    renderLoginScreen()
+    console.error('❌ Error initializing app:', error)
+    renderLoginScreen();
   }
 }
 
 /**
- * Render login screen with Google auth + Email/Password fallback
+ * Render login screen with Google Auth and email/password fallback
  */
 function renderLoginScreen() {
-  console.log('📱 Rendering login screen')
-  document.body.innerHTML = `
+  const app = $('#app');
+  app.innerHTML = `
     <div class="login-container">
       <div class="login-card">
-        <h1>N8N Bootcamp Hub</h1>
-        <p>Track your learning progress and master N8N automation</p>
+        <h1>🚀 N8N Bootcamp</h1>
+        <p>Track your learning progress</p>
         
-        <!-- Google Sign-in -->
-        <button class="btn-google" onclick="handleGoogleLogin()" style="opacity: 0.6;" title="Configure Supabase OAuth first">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-          </svg>
-          Sign in with Google (Setup Required)
+        <button class="btn-google" onclick="window.handleGoogleLogin()">
+          🔐 Sign in with Google
         </button>
         
-        <!-- Divider -->
-        <div style="margin: 24px 0; display: flex; align-items: center; gap: 12px;">
-          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-          <span style="color: #64748b; font-size: 12px;">Recommended: Use Email/Password</span>
-          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-        </div>
-        
-        <!-- Email/Password Login -->
-        <div id="email-login-form">
-          <input 
-            type="email" 
-            id="login-email" 
-            placeholder="Email address" 
-            style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
-          />
-          <input 
-            type="password" 
-            id="login-password" 
-            placeholder="Password" 
-            style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
-          />
-          <button 
-            class="btn-google" 
-            onclick="handleEmailLogin()" 
-            style="background: #667eea; margin-bottom: 12px;"
-          >
-            Sign in with Email
+        <div class="login-info">
+          <h3>Or use email & password:</h3>
+          <input type="email" id="email" placeholder="your@email.com" 
+                 style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <input type="password" id="password" placeholder="Password" 
+                 style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <button onclick="window.handleEmailLogin()" 
+                  style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">
+            Login
           </button>
-          <button 
-            class="btn-google" 
-            onclick="handleEmailSignup()" 
-            style="background: #764ba2; margin-bottom: 12px;"
-          >
+          <button onclick="window.handleEmailSignup()" 
+                  style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
             Create Account
           </button>
         </div>
         
-        <div class="login-info">
-          <h3>About this bootcamp:</h3>
-          <ul>
-            <li>9-day comprehensive N8N training</li>
-            <li>Learn automation workflows from basics to advanced</li>
-            <li>Real-world project experience</li>
-            <li>Capstone project to showcase skills</li>
-          </ul>
-        </div>
+        <ul style="text-align: left; margin-top: 20px;">
+          <li>✓ Track daily progress</li>
+          <li>✓ Take learning notes</li>
+          <li>✓ View performance stats</li>
+          <li>✓ Export your data</li>
+        </ul>
       </div>
     </div>
   `;
 }
 
 /**
- * Handle Google Sign-in
- */
-async function handleGoogleLogin() {
-  try {
-    console.log('🔐 Starting Google login...')
-    const { signInWithGoogle } = await import('./supabase-config.js');
-    const result = await signInWithGoogle();
-    
-    if (!result.success) {
-      alert('❌ Google login failed:\n\n' + result.error + '\n\nPlease use email/password instead.');
-      console.error('Google auth failed:', result.error)
-    } else {
-      console.log('✅ Google auth initiated, redirecting...')
-    }
-  } catch (error) {
-    console.error('❌ Google login exception:', error)
-    alert('Error during Google login: ' + error.message)
-  }
-}
-
-/**
- * Toggle email/password login form
- */
-function toggleEmailLogin() {
-  const form = document.getElementById('email-login-form')
-  if (form) {
-    form.style.display = form.style.display === 'none' ? 'block' : 'none'
-  }
-}
-
-/**
- * Handle Email Sign-in
- */
-async function handleEmailLogin() {
-  try {
-    const email = document.getElementById('login-email')?.value
-    const password = document.getElementById('login-password')?.value
-    
-    if (!email || !password) {
-      alert('Please enter both email and password')
-      return
-    }
-    
-    console.log('📧 Signing in with email:', email)
-    const { signInWithEmail } = await import('./supabase-config.js')
-    const result = await signInWithEmail(email, password)
-    
-    if (!result.success) {
-      alert('❌ Login failed: ' + result.error)
-    } else {
-      console.log('✅ Email login successful, reloading...')
-      window.location.reload()
-    }
-  } catch (error) {
-    console.error('❌ Email login error:', error)
-    alert('Error: ' + error.message)
-  }
-}
-
-/**
- * Handle Email Sign-up
- */
-async function handleEmailSignup() {
-  try {
-    const email = document.getElementById('login-email')?.value
-    const password = document.getElementById('login-password')?.value
-    
-    if (!email || !password) {
-      alert('Please enter both email and password')
-      return
-    }
-    
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters')
-      return
-    }
-    
-    console.log('📧 Signing up with email:', email)
-    const { signUpWithEmail } = await import('./supabase-config.js')
-    const result = await signUpWithEmail(email, password)
-    
-    if (!result.success) {
-      alert('❌ Sign up failed: ' + result.error)
-    } else {
-      alert('✅ Account created! Check your email for confirmation, then sign in.')
-    }
-  } catch (error) {
-    console.error('❌ Email signup error:', error)
-    alert('Error: ' + error.message)
-  }
-}
-
-// Expose to global scope for onclick handlers
-window.handleGoogleLogin = handleGoogleLogin;
-window.toggleEmailLogin = toggleEmailLogin;
-window.handleEmailLogin = handleEmailLogin;
-window.handleEmailSignup = handleEmailSignup;
-
-/**
- * Render main application
+ * Render main application dashboard
  */
 function renderMainApp() {
-  document.body.innerHTML = `
+  const app = $('#app');
+  const completedCount = userProgress.completedTasks.filter(t => t).length;
+  const progressPercent = Math.round((completedCount / 9) * 100);
+  
+  app.innerHTML = `
     <div class="app-container">
-      <header class="app-header">
+      <!-- Header -->
+      <div class="app-header">
         <div class="header-content">
-          <h1>N8N Bootcamp Hub</h1>
-          <p>Welcome, ${currentUser?.user_metadata?.full_name || currentUser?.email}</p>
+          <h1>${BOOTCAMP.title}</h1>
+          <p>Welcome, ${currentUser.email} • ${completedCount}/9 Days Complete</p>
         </div>
-        <button class="btn-logout" onclick="handleLogout()">Logout</button>
-      </header>
-
-      <main class="app-main">
-        <!-- Progress Summary -->
-        <section class="progress-section">
-          <div class="progress-card">
-            <h2>Your Progress</h2>
-            <div class="progress-bar-container">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${userProgress.progressPercent}%"></div>
+        <button class="btn-logout" onclick="window.handleLogout()">Logout</button>
+      </div>
+      
+      <!-- Progress Section -->
+      <div class="progress-section">
+        <div class="progress-card">
+          <h2>📊 Overall Progress</h2>
+          <div class="progress-bar-container">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progressPercent}%"></div>
+            </div>
+            <div class="progress-text">${progressPercent}%</div>
+          </div>
+          <div class="progress-detail">
+            You've completed <strong>${completedCount} out of 9 days</strong>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tabs Navigation -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="window.switchTab('learning')">
+          📚 Learning Path
+        </button>
+        <button class="tab-btn" onclick="window.switchTab('assessment')">
+          ✍️ Assessments
+        </button>
+        <button class="tab-btn" onclick="window.switchTab('performance')">
+          📈 Performance
+        </button>
+        <button class="tab-btn" onclick="window.switchTab('export')">
+          💾 Export
+        </button>
+      </div>
+      
+      <!-- Tabs Content -->
+      <div class="tabs-content">
+        <!-- Learning Path Tab -->
+        <div id="learning" class="tab-pane active">
+          <h2>📚 Your Learning Path</h2>
+          <div class="learning-grid">
+            ${BOOTCAMP.days.map((item, index) => `
+              <div class="day-card ${userProgress.completedTasks[index] ? 'completed' : ''}">
+                <div class="day-number">Day ${item.day}</div>
+                <h3>${item.title}</h3>
+                <div class="concepts">${item.concepts.join(' • ')}</div>
+                <span class="difficulty difficulty-${item.difficulty}">${item.duration}</span>
+                <div class="checkbox-container">
+                  <input 
+                    type="checkbox" 
+                    ${userProgress.completedTasks[index] ? 'checked' : ''}
+                    onchange="window.toggleDay(${index})"
+                  >
+                  <span>Mark as complete</span>
+                </div>
               </div>
-              <span class="progress-text">${userProgress.progressPercent}%</span>
+            `).join('')}
+          </div>
+        </div>
+        
+        <!-- Assessment Tab -->
+        <div id="assessment" class="tab-pane">
+          <h2>✍️ Daily Notes & Assessment</h2>
+          <div class="assessment-container">
+            ${BOOTCAMP.days.map((item, index) => {
+              const notes = userProgress.taskNotes[`day-${index + 1}`] || '';
+              const isCompleted = userProgress.completedTasks[index];
+              return `
+                <div class="assessment-item">
+                  <div class="assessment-header">
+                    <h3>Day ${item.day}: ${item.title}</h3>
+                    <span class="status ${isCompleted ? 'done' : 'pending'}">
+                      ${isCompleted ? '✓ Done' : '○ Pending'}
+                    </span>
+                  </div>
+                  <textarea 
+                    class="assessment-textarea"
+                    placeholder="Write your notes, what you learned, challenges faced..."
+                    onchange="window.updateDayNotes(${index}, this.value)"
+                    onblur="window.autoSaveProgress()"
+                  >${notes}</textarea>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-pane">
+          <h2>📈 Performance Analytics</h2>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-number">${completedCount}</div>
+              <div class="stat-label">Days Completed</div>
             </div>
-            <p class="progress-detail">
-              ${userProgress.completedTasks.filter(t => t).length} of ${BOOTCAMP.days.length} days completed
-            </p>
+            <div class="stat-box">
+              <div class="stat-number">${progressPercent}%</div>
+              <div class="stat-label">Progress</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">${9 - completedCount}</div>
+              <div class="stat-label">Days Remaining</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number">${Object.keys(userProgress.taskNotes).length}</div>
+              <div class="stat-label">Notes Taken</div>
+            </div>
           </div>
-        </section>
-
-        <!-- Tabs Navigation -->
-        <nav class="tabs-nav">
-          <button class="tab-btn active" data-tab="learning" onclick="switchTab('learning')">
-            📚 Learning Path
-          </button>
-          <button class="tab-btn" data-tab="assessment" onclick="switchTab('assessment')">
-            ✓ Assessment
-          </button>
-          <button class="tab-btn" data-tab="performance" onclick="switchTab('performance')">
-            📊 Performance
-          </button>
-          <button class="tab-btn" data-tab="exports" onclick="switchTab('exports')">
-            ⬇ Exports
-          </button>
-        </nav>
-
-        <!-- Tab Content -->
-        <div class="tabs-content">
-          <!-- Learning Path Tab -->
-          <div class="tab-pane active" id="learning-tab">
-            <h2>9-Day Learning Path</h2>
-            <div class="learning-grid" id="learning-grid"></div>
-          </div>
-
-          <!-- Assessment Tab -->
-          <div class="tab-pane" id="assessment-tab">
-            <h2>Day Assessment & Notes</h2>
-            <div class="assessment-container" id="assessment-container"></div>
-          </div>
-
-          <!-- Performance Tab -->
-          <div class="tab-pane" id="performance-tab">
-            <h2>Performance Analytics</h2>
-            <div class="performance-stats" id="performance-stats"></div>
-          </div>
-
-          <!-- Exports Tab -->
-          <div class="tab-pane" id="exports-tab">
-            <h2>Export Your Progress</h2>
-            <div class="export-options">
-              <button class="btn-export" onclick="exportJSON()">
-                📄 Export as JSON
-              </button>
-              <button class="btn-export" onclick="exportCSV()">
-                📋 Export as CSV
-              </button>
-              <button class="btn-export" onclick="saveToDB()">
-                💾 Save to Database
-              </button>
+          
+          <div class="chart-container">
+            <h3>📊 Progress by Week</h3>
+            <div class="chart">
+              <div class="chart-bar">
+                <div class="bar-label">Week 1 (Days 1-3)</div>
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(0, 3).filter(t => t).length / 3) * 100}%"></div>
+                </div>
+                <div class="bar-text">${userProgress.completedTasks.slice(0, 3).filter(t => t).length}/3 complete</div>
+              </div>
+              <div class="chart-bar">
+                <div class="bar-label">Week 2 (Days 4-6)</div>
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(3, 6).filter(t => t).length / 3) * 100}%"></div>
+                </div>
+                <div class="bar-text">${userProgress.completedTasks.slice(3, 6).filter(t => t).length}/3 complete</div>
+              </div>
+              <div class="chart-bar">
+                <div class="bar-label">Week 3 (Days 7-9)</div>
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(6, 9).filter(t => t).length / 3) * 100}%"></div>
+                </div>
+                <div class="bar-text">${userProgress.completedTasks.slice(6, 9).filter(t => t).length}/3 complete</div>
+              </div>
             </div>
           </div>
         </div>
-      </main>
+        
+        <!-- Export Tab -->
+        <div id="export" class="tab-pane">
+          <h2>💾 Export Your Data</h2>
+          <p style="margin-bottom: 20px; color: #64748b;">Download your progress and notes in your preferred format.</p>
+          <div class="export-options">
+            <button class="btn-export" onclick="window.handleExportJSON()">
+              📄 Export as JSON
+            </button>
+            <button class="btn-export" onclick="window.handleExportCSV()">
+              📊 Export as CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="save-status" style="
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: #10b981;
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    ">
+      ✓ Saved to database
     </div>
   `;
-  
-  // Wait for DOM to update before rendering content
-  setTimeout(() => {
-    renderLearningPath();
-    renderAssessment();
-    renderPerformance();
-  }, 0);
 }
 
 /**
  * Switch between tabs
  */
 function switchTab(tabName) {
-  $$('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  // Hide all panes
   $$('.tab-pane').forEach(pane => pane.classList.remove('active'));
   
-  $(`[data-tab="${tabName}"]`).classList.add('active');
-  $(`#${tabName}-tab`).classList.add('active');
-}
-
-/**
- * Render learning path with day cards
- */
-function renderLearningPath() {
-  const grid = $('#learning-grid');
-  grid.innerHTML = BOOTCAMP.days.map((day, idx) => `
-    <div class="day-card ${userProgress.completedTasks[idx] ? 'completed' : ''}">
-      <div class="day-number">Day ${day.day}</div>
-      <h3>${day.title}</h3>
-      <p class="concepts">${day.concepts.join(', ')}</p>
-      <div class="difficulty difficulty-${day.difficulty}">
-        ${'⭐'.repeat(day.difficulty)} Level ${['Beginner', 'Intermediate', 'Advanced'][day.difficulty - 1]}
-      </div>
-      <label class="checkbox-container">
-        <input type="checkbox" ${userProgress.completedTasks[idx] ? 'checked' : ''} 
-               onchange="toggleTask(${idx})">
-        <span>Mark as completed</span>
-      </label>
-    </div>
-  `).join('');
-}
-
-/**
- * Render assessment section
- */
-function renderAssessment() {
-  const container = $('#assessment-container');
-  container.innerHTML = BOOTCAMP.days.map((day, idx) => `
-    <div class="assessment-item">
-      <div class="assessment-header">
-        <h3>Day ${day.day}: ${day.title}</h3>
-        <span class="status ${userProgress.completedTasks[idx] ? 'done' : 'pending'}">
-          ${userProgress.completedTasks[idx] ? '✓ Done' : 'Pending'}
-        </span>
-      </div>
-      <textarea placeholder="Add notes for Day ${day.day}..." 
-                  class="assessment-textarea"
-                  onchange="updateNotes(${idx}, this.value)">
-${userProgress.taskNotes[idx] || ''}</textarea>
-    </div>
-  `).join('');
-}
-
-/**
- * Render performance analytics
- */
-function renderPerformance() {
-  const container = $('#performance-stats');
-  const completed = userProgress.completedTasks.filter(t => t).length;
-  const avgDifficulty = BOOTCAMP.days.filter((d, i) => userProgress.completedTasks[i]).length > 0
-    ? (BOOTCAMP.days.filter((d, i) => userProgress.completedTasks[i]).reduce((sum, d) => sum + d.difficulty, 0) / completed).toFixed(1)
-    : 0;
+  // Remove active class from all buttons
+  $$('.tab-btn').forEach(btn => btn.classList.remove('active'));
   
-  container.innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-box">
-        <div class="stat-number">${completed}</div>
-        <div class="stat-label">Days Completed</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number">${userProgress.progressPercent}%</div>
-        <div class="stat-label">Overall Progress</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number">${avgDifficulty || 0}</div>
-        <div class="stat-label">Avg Difficulty</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number">${BOOTCAMP.days.length - completed}</div>
-        <div class="stat-label">Days Remaining</div>
-      </div>
-    </div>
-    
-    <div class="chart-container">
-      <h3>Completion by Difficulty</h3>
-      <div class="chart">
-        ${[1, 2, 3].map(level => {
-          const inLevel = BOOTCAMP.days.filter(d => d.difficulty === level).length;
-          const completedInLevel = BOOTCAMP.days.filter((d, i) => d.difficulty === level && userProgress.completedTasks[i]).length;
-          return `
-            <div class="chart-bar">
-              <div class="bar-label">Level ${level}</div>
-              <div class="bar-container">
-                <div class="bar-fill" style="width: ${(completedInLevel / inLevel) * 100}%"></div>
-              </div>
-              <div class="bar-text">${completedInLevel}/${inLevel}</div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `;
+  // Show selected pane
+  const pane = $(`#${tabName}`);
+  if (pane) pane.classList.add('active');
+  
+  // Add active class to clicked button
+  event.target.classList.add('active');
 }
 
 /**
- * Toggle task completion
+ * Toggle day completion
  */
-function toggleTask(index) {
+function toggleDay(index) {
   userProgress.completedTasks[index] = !userProgress.completedTasks[index];
-  updateProgress();
+  console.log(`✓ Day ${index + 1} toggled:`, userProgress.completedTasks[index]);
+  autoSaveProgress();
+  renderMainApp();
 }
 
 /**
- * Update task notes
+ * Update day notes
  */
-function updateNotes(index, text) {
-  userProgress.taskNotes[index] = text;
-  updateProgress();
+function updateDayNotes(index, notes) {
+  userProgress.taskNotes[`day-${index + 1}`] = notes;
+  console.log(`✏️ Notes updated for Day ${index + 1}`);
+  autoSaveProgress();
 }
 
 /**
- * Update progress calculations and UI
+ * Auto-save progress with debounce
  */
-function updateProgress() {
-  userProgress.progressPercent = Math.round((userProgress.completedTasks.filter(t => t).length / BOOTCAMP.days.length) * 100);
-  renderLearningPath();
-  renderAssessment();
-  renderPerformance();
+function autoSaveProgress() {
+  // Clear existing timeout
+  if (saveTimeout) clearTimeout(saveTimeout);
+  
+  // Set new timeout
+  saveTimeout = setTimeout(async () => {
+    try {
+      if (!currentUser || !currentUser.id) {
+        console.error('❌ Not logged in, cannot save');
+        return;
+      }
+      
+      console.log('💾 Auto-saving progress...');
+      const completed = userProgress.completedTasks.filter(t => t).length;
+      const progressPercent = Math.round((completed / 9) * 100);
+      
+      const result = await saveProgress(currentUser.id, {
+        ...userProgress,
+        progressPercent: progressPercent,
+        email: currentUser.email
+      });
+      
+      if (result.success) {
+        console.log('✅ Auto-save successful!');
+        showSaveStatus();
+      } else {
+        console.error('❌ Auto-save failed:', result.error);
+      }
+    } catch (error) {
+      console.error('❌ Auto-save error:', error);
+    }
+  }, AUTO_SAVE_DELAY);
 }
 
 /**
- * Load user progress from Supabase
+ * Show save status notification
+ */
+function showSaveStatus() {
+  const status = $('#save-status');
+  if (status) {
+    status.style.opacity = '1';
+    setTimeout(() => {
+      status.style.opacity = '0';
+    }, 2000);
+  }
+}
+
+/**
+ * Load user progress from database
  */
 async function loadUserProgress() {
   try {
-    const { loadProgress } = await import('./supabase-config.js');
-    const result = await loadProgress(currentUser.id);
+    console.log('📂 Loading user progress...');
     
-    console.log('📊 Loaded progress:', result)
+    if (!currentUser || !currentUser.id) {
+      console.log('ℹ️ No user ID, skipping load');
+      return;
+    }
+    
+    const result = await loadProgress(currentUser.id);
     
     if (result.success && result.data) {
       userProgress = {
@@ -507,83 +460,142 @@ async function loadUserProgress() {
         progressPercent: result.data.progress_percent || 0,
         cohort: result.data.cohort || 'default'
       };
-      console.log('✅ User progress loaded:', userProgress)
+      console.log('✅ Progress loaded successfully:', userProgress);
     } else {
-      console.log('ℹ️ No previous progress found, using defaults')
+      console.log('ℹ️ No previous progress found, using defaults');
     }
-    
-    // Ensure content is rendered
-    updateProgress();
   } catch (error) {
-    console.error('❌ Error loading progress:', error)
-    // Still update progress with defaults
-    updateProgress();
+    console.error('❌ Error loading progress:', error);
   }
 }
 
-/**
- * Save progress to Supabase
- */
-async function saveToDB() {
+// Global function exports for onclick handlers
+window.handleGoogleLogin = async function() {
   try {
-    console.log('💾 Saving progress to database...')
-    console.log('📊 Data to save:', {
-      userId: currentUser.id,
-      email: currentUser.email,
-      completedTasks: userProgress.completedTasks,
-      taskNotes: userProgress.taskNotes,
-      progressPercent: userProgress.progressPercent
-    })
-    
-    const { saveProgress } = await import('./supabase-config.js');
-    const result = await saveProgress(currentUser.id, {
-      ...userProgress,
-      email: currentUser.email
-    });
-    
+    console.log('🔐 Starting Google login...');
+    const result = await signInWithGoogle();
     if (result.success) {
-      console.log('✅ Save successful:', result.data)
-      alert('✓ Progress saved successfully!');
+      currentUser = result.user;
+      await loadUserProgress();
+      renderMainApp();
     } else {
-      console.error('❌ Save failed:', result.error)
-      alert('✗ Error saving progress:\n\n' + result.error + '\n\nMake sure:\n1. Database table exists (see DATABASE_SETUP.md)\n2. Row Level Security policies are configured\n3. You are logged in');
+      alert('Google login failed. Please use email/password instead.');
     }
   } catch (error) {
-    console.error('❌ Save exception:', error)
-    alert('✗ Error saving progress:\n\n' + error.message + '\n\nPlease check DATABASE_SETUP.md for instructions.');
+    console.error('Google login error:', error);
+    alert('Error during Google login: ' + error.message);
   }
-}
+};
 
-/**
- * Export progress as JSON
- */
-async function exportJSON() {
-  const { exportProgressJSON } = await import('./supabase-config.js');
-  exportProgressJSON(userProgress, currentUser.user_metadata?.full_name || currentUser.email);
-}
+window.handleEmailLogin = async function() {
+  const email = $('#email').value;
+  const password = $('#password').value;
+  
+  if (!email || !password) {
+    alert('Please enter email and password');
+    return;
+  }
+  
+  try {
+    console.log('📧 Logging in with email...');
+    const result = await signInWithEmail(email, password);
+    if (result.success) {
+      currentUser = result.user;
+      await loadUserProgress();
+      renderMainApp();
+    } else {
+      alert('Login failed: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Email login error:', error);
+    alert('Error during login: ' + error.message);
+  }
+};
 
-/**
- * Export progress as CSV
- */
-async function exportCSV() {
-  const { exportProgressCSV } = await import('./supabase-config.js');
-  exportProgressCSV(userProgress, currentUser.user_metadata?.full_name || currentUser.email);
-}
+window.handleEmailSignup = async function() {
+  const email = $('#email').value;
+  const password = $('#password').value;
+  
+  if (!email || !password) {
+    alert('Please enter email and password');
+    return;
+  }
+  
+  if (password.length < 6) {
+    alert('Password must be at least 6 characters');
+    return;
+  }
+  
+  try {
+    console.log('📝 Creating account...');
+    const result = await signUpWithEmail(email, password);
+    if (result.success) {
+      currentUser = result.user;
+      await loadUserProgress();
+      renderMainApp();
+    } else {
+      alert('Signup failed: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Signup error:', error);
+    alert('Error during signup: ' + error.message);
+  }
+};
 
-/**
- * Handle logout
- */
-async function handleLogout() {
-  const { signOut } = await import('./supabase-config.js');
-  await signOut();
-  window.location.reload();
-}
+window.handleLogout = async function() {
+  try {
+    console.log('👋 Logging out...');
+    currentUser = null;
+    userProgress = {
+      completedTasks: Array(9).fill(false),
+      taskNotes: {},
+      progressPercent: 0,
+      cohort: 'default'
+    };
+    renderLoginScreen();
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+};
 
-// Expose all functions to global scope for onclick handlers in HTML
-window.handleLogout = handleLogout;
 window.switchTab = switchTab;
-window.exportJSON = exportJSON;
-window.exportCSV = exportCSV;
-window.saveToDB = saveToDB;
+window.toggleDay = toggleDay;
+window.updateDayNotes = updateDayNotes;
+window.autoSaveProgress = autoSaveProgress;
 
-// END OF APP.JS
+window.handleExportJSON = async function() {
+  try {
+    const result = await exportProgressJSON(currentUser.id, userProgress);
+    if (result.success) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(result.data, null, 2)));
+      element.setAttribute('download', `bootcamp-progress-${new Date().toISOString().split('T')[0]}.json`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  } catch (error) {
+    alert('Error exporting JSON: ' + error.message);
+  }
+};
+
+window.handleExportCSV = async function() {
+  try {
+    const result = await exportProgressCSV(currentUser.id, userProgress);
+    if (result.success) {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(result.data));
+      element.setAttribute('download', `bootcamp-progress-${new Date().toISOString().split('T')[0]}.csv`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+  } catch (error) {
+    alert('Error exporting CSV: ' + error.message);
+  }
+};
+
+// Start the app
+initializeApp();

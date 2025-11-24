@@ -173,29 +173,70 @@ export async function isAuthenticated() {
 export async function saveProgress(internId, progressData) {
   try {
     const sb = await initSupabase()
-    console.log('📝 Saving to Supabase with data:', {
-      completed_tasks: progressData.completedTasks,
-      task_notes: progressData.taskNotes
-    })
+    console.log('📝 Saving progress to Supabase...')
+    console.log('   intern_id:', internId)
+    console.log('   email:', progressData.email)
+    console.log('   tasks:', progressData.completedTasks)
+    console.log('   notes:', progressData.taskNotes)
     
-    const { data, error } = await sb
+    // First, try to check if record exists
+    const { data: existingData, error: checkError } = await sb
       .from('intern_progress')
-      .upsert({
-        intern_id: internId,
-        user_email: progressData.email,
-        completed_tasks: progressData.completedTasks,  // Will be auto-converted to JSONB
-        task_notes: progressData.taskNotes,              // Will be auto-converted to JSONB
-        progress_percent: progressData.progressPercent,
-        last_updated: new Date().toISOString(),
-        cohort: progressData.cohort || 'default'
-      }, { onConflict: 'intern_id' })
+      .select('id')
+      .eq('intern_id', internId)
+      .single()
     
-    if (error) throw error
-    console.log('✅ Saved successfully:', data)
+    console.log('   Existing record check:', existingData ? 'Found' : 'Not found')
+    
+    let result;
+    
+    if (existingData) {
+      // Record exists - UPDATE it
+      console.log('   Action: UPDATE')
+      result = await sb
+        .from('intern_progress')
+        .update({
+          user_email: progressData.email,
+          completed_tasks: progressData.completedTasks,
+          task_notes: progressData.taskNotes,
+          progress_percent: progressData.progressPercent,
+          last_updated: new Date().toISOString(),
+          cohort: progressData.cohort || 'default'
+        })
+        .eq('intern_id', internId)
+    } else {
+      // Record doesn't exist - INSERT it
+      console.log('   Action: INSERT')
+      result = await sb
+        .from('intern_progress')
+        .insert({
+          intern_id: internId,
+          user_email: progressData.email,
+          completed_tasks: progressData.completedTasks,
+          task_notes: progressData.taskNotes,
+          progress_percent: progressData.progressPercent,
+          cohort: progressData.cohort || 'default'
+        })
+    }
+    
+    const { data, error } = result
+    
+    if (error) {
+      console.error('❌ Database error:', error)
+      console.error('   Code:', error.code)
+      console.error('   Message:', error.message)
+      console.error('   Details:', error.details)
+      throw error
+    }
+    
+    console.log('✅ Save successful!')
+    console.log('   Response:', data)
     return { success: true, data }
+    
   } catch (error) {
     console.error('❌ Error saving progress:', error)
-    return { success: false, error: error.message }
+    console.error('   Full error:', JSON.stringify(error, null, 2))
+    return { success: false, error: error.message || 'Unknown error' }
   }
 }
 
