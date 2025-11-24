@@ -27,21 +27,84 @@ async function initSupabase() {
  * Google Sign-in
  */
 export async function signInWithGoogle() {
-  const sb = await initSupabase()
-  const { data, error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin,
-      scopes: ['profile', 'email']
+  try {
+    const sb = await initSupabase()
+    console.log('🔐 Attempting Google OAuth sign-in...')
+    
+    const { data, error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/',
+        scopes: 'openid profile email'
+      }
+    })
+    
+    if (error) {
+      console.error('❌ Google OAuth error:', error.message, error)
+      return { success: false, error: `Google auth failed: ${error.message}. Try email/password instead.` }
     }
-  })
-  
-  if (error) {
-    console.error('❌ Google login error:', error)
-    return { success: false, error: error.message }
+    
+    console.log('✅ Google OAuth initiated, redirecting to Google...')
+    return { success: true, data }
+  } catch (err) {
+    console.error('❌ Google login exception:', err)
+    return { success: false, error: `Google auth error: ${err.message}. Please try email/password login instead.` }
   }
-  
-  return { success: true, data }
+}
+
+/**
+ * Email/Password Sign-up (Fallback authentication)
+ */
+export async function signUpWithEmail(email, password) {
+  try {
+    const sb = await initSupabase()
+    console.log('📧 Signing up with email:', email)
+    
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    })
+    
+    if (error) {
+      console.error('❌ Sign up error:', error)
+      return { success: false, error: error.message }
+    }
+    
+    console.log('✅ Sign up successful')
+    return { success: true, data }
+  } catch (err) {
+    console.error('❌ Sign up exception:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Email/Password Sign-in (Fallback authentication)
+ */
+export async function signInWithEmail(email, password) {
+  try {
+    const sb = await initSupabase()
+    console.log('📧 Signing in with email:', email)
+    
+    const { data, error } = await sb.auth.signInWithPassword({
+      email,
+      password
+    })
+    
+    if (error) {
+      console.error('❌ Sign in error:', error)
+      return { success: false, error: error.message }
+    }
+    
+    console.log('✅ Email sign in successful')
+    return { success: true, data }
+  } catch (err) {
+    console.error('❌ Sign in exception:', err)
+    return { success: false, error: err.message }
+  }
 }
 
 /**
@@ -58,17 +121,47 @@ export async function signOut() {
 }
 
 /**
- * Get current user session
+ * Get current user session with better error handling
  */
 export async function getCurrentUser() {
   try {
     const sb = await initSupabase()
-    const { data: { user } } = await sb.auth.getUser()
+    
+    // Try to get the current session
+    const { data: { session }, error: sessionError } = await sb.auth.getSession()
+    
+    if (sessionError) {
+      console.error('❌ Session error:', sessionError)
+      return null
+    }
+    
+    if (!session) {
+      console.log('ℹ️ No active session')
+      return null
+    }
+    
+    // Get user details
+    const { data: { user }, error: userError } = await sb.auth.getUser()
+    
+    if (userError) {
+      console.error('❌ Get user error:', userError)
+      return null
+    }
+    
+    console.log('✅ User authenticated:', user?.email)
     return user
   } catch (e) {
-    console.error('❌ Get user error:', e)
+    console.error('❌ Get user exception:', e)
     return null
   }
+}
+
+/**
+ * Check if user is authenticated (for initialization)
+ */
+export async function isAuthenticated() {
+  const user = await getCurrentUser()
+  return user !== null
 }
 
 /**

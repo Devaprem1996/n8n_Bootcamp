@@ -61,7 +61,7 @@ async function initializeApp() {
 }
 
 /**
- * Render login screen with Google auth
+ * Render login screen with Google auth + Email/Password fallback
  */
 function renderLoginScreen() {
   console.log('📱 Rendering login screen')
@@ -71,11 +71,58 @@ function renderLoginScreen() {
         <h1>N8N Bootcamp Hub</h1>
         <p>Track your learning progress and master N8N automation</p>
         
+        <!-- Google Sign-in -->
         <button class="btn-google" onclick="handleGoogleLogin()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10"></circle>
           </svg>
           Sign in with Google
+        </button>
+        
+        <!-- Divider -->
+        <div style="margin: 24px 0; display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+          <span style="color: #64748b; font-size: 12px;">or</span>
+          <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
+        </div>
+        
+        <!-- Email/Password Login -->
+        <div id="email-login-form" style="display: none;">
+          <input 
+            type="email" 
+            id="login-email" 
+            placeholder="Email address" 
+            style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+          />
+          <input 
+            type="password" 
+            id="login-password" 
+            placeholder="Password" 
+            style="width: 100%; padding: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+          />
+          <button 
+            class="btn-google" 
+            onclick="handleEmailLogin()" 
+            style="background: #667eea; margin-bottom: 12px;"
+          >
+            Sign in with Email
+          </button>
+          <button 
+            class="btn-google" 
+            onclick="handleEmailSignup()" 
+            style="background: #764ba2; margin-bottom: 12px;"
+          >
+            Create Account
+          </button>
+        </div>
+        
+        <!-- Toggle Email Login -->
+        <button 
+          class="btn-google" 
+          onclick="toggleEmailLogin()" 
+          style="background: #666; margin-bottom: 16px;"
+        >
+          Use Email/Password Instead
         </button>
         
         <div class="login-info">
@@ -96,17 +143,100 @@ function renderLoginScreen() {
  * Handle Google Sign-in
  */
 async function handleGoogleLogin() {
-  const { signInWithGoogle } = await import('./supabase-config.js');
-  const result = await signInWithGoogle();
-  
-  if (!result.success) {
-    alert('Login failed: ' + result.error);
+  try {
+    console.log('🔐 Starting Google login...')
+    const { signInWithGoogle } = await import('./supabase-config.js');
+    const result = await signInWithGoogle();
+    
+    if (!result.success) {
+      alert('❌ Google login failed:\n\n' + result.error + '\n\nPlease use email/password instead.');
+      console.error('Google auth failed:', result.error)
+    } else {
+      console.log('✅ Google auth initiated, redirecting...')
+    }
+  } catch (error) {
+    console.error('❌ Google login exception:', error)
+    alert('Error during Google login: ' + error.message)
   }
-  // Redirect will happen automatically via OAuth flow
+}
+
+/**
+ * Toggle email/password login form
+ */
+function toggleEmailLogin() {
+  const form = document.getElementById('email-login-form')
+  if (form) {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none'
+  }
+}
+
+/**
+ * Handle Email Sign-in
+ */
+async function handleEmailLogin() {
+  try {
+    const email = document.getElementById('login-email')?.value
+    const password = document.getElementById('login-password')?.value
+    
+    if (!email || !password) {
+      alert('Please enter both email and password')
+      return
+    }
+    
+    console.log('📧 Signing in with email:', email)
+    const { signInWithEmail } = await import('./supabase-config.js')
+    const result = await signInWithEmail(email, password)
+    
+    if (!result.success) {
+      alert('❌ Login failed: ' + result.error)
+    } else {
+      console.log('✅ Email login successful, reloading...')
+      window.location.reload()
+    }
+  } catch (error) {
+    console.error('❌ Email login error:', error)
+    alert('Error: ' + error.message)
+  }
+}
+
+/**
+ * Handle Email Sign-up
+ */
+async function handleEmailSignup() {
+  try {
+    const email = document.getElementById('login-email')?.value
+    const password = document.getElementById('login-password')?.value
+    
+    if (!email || !password) {
+      alert('Please enter both email and password')
+      return
+    }
+    
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters')
+      return
+    }
+    
+    console.log('📧 Signing up with email:', email)
+    const { signUpWithEmail } = await import('./supabase-config.js')
+    const result = await signUpWithEmail(email, password)
+    
+    if (!result.success) {
+      alert('❌ Sign up failed: ' + result.error)
+    } else {
+      alert('✅ Account created! Check your email for confirmation, then sign in.')
+    }
+  } catch (error) {
+    console.error('❌ Email signup error:', error)
+    alert('Error: ' + error.message)
+  }
 }
 
 // Expose to global scope for onclick handlers
 window.handleGoogleLogin = handleGoogleLogin;
+window.toggleEmailLogin = toggleEmailLogin;
+window.handleEmailLogin = handleEmailLogin;
+window.handleEmailSignup = handleEmailSignup;
 
 /**
  * Render main application
