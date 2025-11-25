@@ -655,7 +655,7 @@ function renderMainApp() {
           <h2>📚 Your Learning Path</h2>
           <div class="learning-grid">
             ${BOOTCAMP.days.map((item, index) => `
-              <div class="day-card ${userProgress.completedTasks[index] ? 'completed' : ''}">
+              <div class="day-card ${progress.completedTasks[index] ? 'completed' : ''}">
                 <div class="day-number">Day ${item.day}</div>
                 <h3>${item.title}</h3>
                 
@@ -687,7 +687,7 @@ function renderMainApp() {
                 <div class="checkbox-container" style="margin-top: 12px;">
                   <input 
                     type="checkbox" 
-                    ${userProgress.completedTasks[index] ? 'checked' : ''}
+                    ${progress.completedTasks[index] ? 'checked' : ''}
                     onchange="window.toggleDay(${index})"
                   >
                   <span>Mark as complete</span>
@@ -702,8 +702,8 @@ function renderMainApp() {
           <h2>✍️ Daily Notes & Assessment</h2>
           <div class="assessment-container">
             ${BOOTCAMP.days.map((item, index) => {
-              const notes = userProgress.taskNotes[`day-${index + 1}`] || '';
-              const isCompleted = userProgress.completedTasks[index];
+              const notes = progress.taskNotes[`day-${index + 1}`] || '';
+              const isCompleted = progress.completedTasks[index];
               return `
                 <div class="assessment-item">
                   <div class="assessment-header">
@@ -751,7 +751,7 @@ function renderMainApp() {
               <div class="stat-label">Days Remaining</div>
             </div>
             <div class="stat-box">
-              <div class="stat-number">${Object.keys(userProgress.taskNotes).length}</div>
+              <div class="stat-number">${Object.keys(progress.taskNotes).length}</div>
               <div class="stat-label">Notes Taken</div>
             </div>
           </div>
@@ -762,23 +762,23 @@ function renderMainApp() {
               <div class="chart-bar">
                 <div class="bar-label">Week 1 (Days 1-3)</div>
                 <div class="bar-container">
-                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(0, 3).filter(t => t).length / 3) * 100}%"></div>
+                  <div class="bar-fill" style="width: ${(progress.completedTasks.slice(0, 3).filter(t => t).length / 3) * 100}%"></div>
                 </div>
-                <div class="bar-text">${userProgress.completedTasks.slice(0, 3).filter(t => t).length}/3 complete</div>
+                <div class="bar-text">${progress.completedTasks.slice(0, 3).filter(t => t).length}/3 complete</div>
               </div>
               <div class="chart-bar">
                 <div class="bar-label">Week 2 (Days 4-6)</div>
                 <div class="bar-container">
-                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(3, 6).filter(t => t).length / 3) * 100}%"></div>
+                  <div class="bar-fill" style="width: ${(progress.completedTasks.slice(3, 6).filter(t => t).length / 3) * 100}%"></div>
                 </div>
-                <div class="bar-text">${userProgress.completedTasks.slice(3, 6).filter(t => t).length}/3 complete</div>
+                <div class="bar-text">${progress.completedTasks.slice(3, 6).filter(t => t).length}/3 complete</div>
               </div>
               <div class="chart-bar">
                 <div class="bar-label">Week 3 (Days 7-9)</div>
                 <div class="bar-container">
-                  <div class="bar-fill" style="width: ${(userProgress.completedTasks.slice(6, 9).filter(t => t).length / 3) * 100}%"></div>
+                  <div class="bar-fill" style="width: ${(progress.completedTasks.slice(6, 9).filter(t => t).length / 3) * 100}%"></div>
                 </div>
-                <div class="bar-text">${userProgress.completedTasks.slice(6, 9).filter(t => t).length}/3 complete</div>
+                <div class="bar-text">${progress.completedTasks.slice(6, 9).filter(t => t).length}/3 complete</div>
               </div>
             </div>
           </div>
