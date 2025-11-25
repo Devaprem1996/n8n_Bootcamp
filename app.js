@@ -387,11 +387,11 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
 /**
- * Initialize the application
+ * Initialize the application with landing page
  */
 async function initializeApp() {
   try {
-    console.log('🚀 Initializing N8N Bootcamp Hub...')
+    console.log('🚀 Initializing Vidana N8N Bootcamp...')
     
     // Check if user is already logged in
     const user = await getCurrentUser();
@@ -402,13 +402,47 @@ async function initializeApp() {
       await loadUserProgress();
       renderMainApp();
     } else {
-      console.log('ℹ️ No user logged in, showing login screen')
-      renderLoginScreen();
+      console.log('ℹ️ No user logged in, showing landing page')
+      renderLandingPage();
     }
   } catch (error) {
     console.error('❌ Error initializing app:', error)
-    renderLoginScreen();
+    renderLandingPage();
   }
+}
+
+/**
+ * Render modern landing page
+ */
+function renderLandingPage() {
+  const app = $('#app');
+  app.innerHTML = `
+    <div class="landing-container">
+      <div class="animated-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="grid"></div>
+      </div>
+      
+      <div class="landing-content">
+        <h1 class="landing-title">Vidana N8N BootCamp</h1>
+        <p class="landing-subtitle">Master Modern Automation</p>
+        <p class="landing-description">
+          Join our comprehensive bootcamp and learn to build powerful automation workflows 
+          with N8N. Master integration, data transformation, and real-world automation patterns.
+        </p>
+        <div class="landing-cta">
+          <button class="btn-primary" onclick="window.goToLogin()">
+            Get Started
+          </button>
+          <button class="btn-secondary" onclick="window.scrollToFeatures()">
+            Learn More
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /**
@@ -419,34 +453,46 @@ function renderLoginScreen() {
   app.innerHTML = `
     <div class="login-container">
       <div class="login-card">
-        <h1>🚀 N8N Bootcamp</h1>
-        <p>Track your learning progress</p>
+        <h1>🚀 Welcome Back</h1>
+        <p>Continue to Vidana N8N BootCamp</p>
         
         <button class="btn-google" onclick="window.handleGoogleLogin()">
           🔐 Sign in with Google
         </button>
         
         <div class="login-info">
-          <h3>Or use email & password:</h3>
+          <h3>Or use email & password</h3>
           <input type="email" id="email" placeholder="your@email.com" 
-                 style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                 style="width: 100%; padding: 12px 16px; margin-bottom: 12px; background: rgba(100, 116, 139, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); color: #e4e9f1; border-radius: 8px; font-size: 14px;">
           <input type="password" id="password" placeholder="Password" 
-                 style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                 style="width: 100%; padding: 12px 16px; margin-bottom: 16px; background: rgba(100, 116, 139, 0.1); border: 1px solid rgba(148, 163, 184, 0.3); color: #e4e9f1; border-radius: 8px; font-size: 14px;">
           <button onclick="window.handleEmailLogin()" 
-                  style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">
+                  style="width: 100%; padding: 12px 16px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 10px; font-size: 14px; transition: all 0.3s;">
             Login
           </button>
           <button onclick="window.handleEmailSignup()" 
-                  style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                  style="width: 100%; padding: 12px 16px; background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;">
             Create Account
           </button>
         </div>
         
-        <ul style="text-align: left; margin-top: 20px;">
-          <li>✓ Track daily progress</li>
-          <li>✓ Take learning notes</li>
-          <li>✓ View performance stats</li>
-          <li>✓ Export your data</li>
+        <ul style="text-align: left; margin-top: 20px; list-style: none;">
+          <li style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; padding-left: 20px; position: relative;">
+            <span style="position: absolute; left: 0; color: #22c55e;">✓</span>
+            Track daily progress
+          </li>
+          <li style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; padding-left: 20px; position: relative;">
+            <span style="position: absolute; left: 0; color: #22c55e;">✓</span>
+            Take learning notes
+          </li>
+          <li style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; padding-left: 20px; position: relative;">
+            <span style="position: absolute; left: 0; color: #22c55e;">✓</span>
+            View performance stats
+          </li>
+          <li style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; padding-left: 20px; position: relative;">
+            <span style="position: absolute; left: 0; color: #22c55e;">✓</span>
+            Export your data
+          </li>
         </ul>
       </div>
     </div>
@@ -466,7 +512,7 @@ function renderMainApp() {
       <!-- Header -->
       <div class="app-header">
         <div class="header-content">
-          <h1>${BOOTCAMP.title}</h1>
+          <h1>Vidana N8N BootCamp</h1>
           <p>Welcome, ${currentUser.email} • ${completedCount}/9 Days Complete</p>
         </div>
         <button class="btn-logout" onclick="window.handleLogout()">Logout</button>
@@ -568,7 +614,7 @@ function renderMainApp() {
                   <div class="assessment-header">
                     <div>
                       <h3>Day ${item.day}: ${item.title}</h3>
-                      <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                      <p style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
                         ${item.topics.join(' • ')}
                       </p>
                     </div>
@@ -577,7 +623,7 @@ function renderMainApp() {
                     </span>
                   </div>
                   
-                  <div class="assessment-homework" style="margin: 12px 0; padding: 12px; background: #f1f5f9; border-left: 3px solid #667eea; border-radius: 4px; font-size: 12px;">
+                  <div class="assessment-homework">
                     <strong>📝 Homework:</strong> ${item.homework}
                   </div>
                   
@@ -646,7 +692,7 @@ function renderMainApp() {
         <!-- Export Tab -->
         <div id="export" class="tab-pane">
           <h2>💾 Export Your Data</h2>
-          <p style="margin-bottom: 20px; color: #64748b;">Download your progress and notes in your preferred format.</p>
+          <p style="margin-bottom: 20px; color: #94a3b8;">Download your progress and notes in your preferred format.</p>
           <div class="export-options">
             <button class="btn-export" onclick="window.handleExportJSON()">
               📄 Export as JSON
@@ -662,14 +708,14 @@ function renderMainApp() {
           <h2>📖 Learning Resources</h2>
           
           <!-- Resources Navigation -->
-          <div class="resource-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
-            <button class="resource-tab-btn active" onclick="window.switchResourceTab('tutorials')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+          <div class="resource-tabs">
+            <button class="resource-tab-btn active" onclick="window.switchResourceTab('tutorials')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid #6366f1; font-size: 13px; font-weight: 600; color: #6366f1; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px;">
               🎥 Video Tutorials
             </button>
-            <button class="resource-tab-btn" onclick="window.switchResourceTab('workflows')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+            <button class="resource-tab-btn" onclick="window.switchResourceTab('workflows')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 13px; font-weight: 600; color: #94a3b8; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px;">
               ⚙️ Workflows
             </button>
-            <button class="resource-tab-btn" onclick="window.switchResourceTab('guides')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+            <button class="resource-tab-btn" onclick="window.switchResourceTab('guides')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 13px; font-weight: 600; color: #94a3b8; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px;">
               📚 Setup Guides
             </button>
           </div>
@@ -677,23 +723,24 @@ function renderMainApp() {
           <!-- Tutorials -->
           <div id="resource-tutorials" class="resource-content" style="display: block;">
             ${BOOTCAMP.resources.tutorials.map(tut => `
-              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
-                <h3 style="color: #0f172a; margin-bottom: 12px;">📺 Day ${tut.day}: ${tut.title}</h3>
-                <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="margin-bottom: 24px; border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 20px; background: rgba(99, 102, 241, 0.05);">
+                <h3 style="color: #f1f5f9; margin-bottom: 16px;">📺 Day ${tut.day}: ${tut.title}</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
                   ${tut.youtube.map(vid => `
                     <a href="${vid.url}" target="_blank" style="
                       display: flex;
                       align-items: center;
-                      gap: 10px;
-                      padding: 10px 12px;
-                      background: white;
-                      border: 1px solid #e2e8f0;
-                      border-radius: 6px;
+                      gap: 12px;
+                      padding: 12px 16px;
+                      background: rgba(30, 31, 46, 0.6);
+                      border: 1px solid rgba(99, 102, 241, 0.2);
+                      border-radius: 8px;
                       text-decoration: none;
-                      color: #667eea;
+                      color: #6366f1;
                       font-size: 14px;
+                      font-weight: 600;
                       transition: all 0.3s;
-                    " onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='white'">
+                    " onmouseover="this.style.background='rgba(99, 102, 241, 0.15)'; this.style.borderColor='rgba(99, 102, 241, 0.5)'" onmouseout="this.style.background='rgba(30, 31, 46, 0.6)'; this.style.borderColor='rgba(99, 102, 241, 0.2)'">
                       ▶️ ${vid.title}
                     </a>
                   `).join('')}
@@ -706,43 +753,43 @@ function renderMainApp() {
           <div id="resource-workflows" class="resource-content" style="display: none;">
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
               ${BOOTCAMP.resources.workflows.map((wf, idx) => `
-                <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; background: white; transition: all 0.3s; display: flex; flex-direction: column;">
+                <div style="border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 20px; background: linear-gradient(135deg, rgba(30, 31, 46, 0.6) 0%, rgba(22, 25, 43, 0.6) 100%); transition: all 0.3s; display: flex; flex-direction: column;">
                   <div style="flex: 1;">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                      <h3 style="color: #0f172a; font-size: 16px;">⚙️ ${wf.title}</h3>
-                      <div style="background: ${wf.difficulty === 1 ? '#dbeafe' : wf.difficulty === 2 ? '#fef3c7' : '#fee2e2'}; color: ${wf.difficulty === 1 ? '#1e40af' : wf.difficulty === 2 ? '#92400e' : '#991b1b'}; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                      <h3 style="color: #f1f5f9; font-size: 16px;">⚙️ ${wf.title}</h3>
+                      <div style="background: ${wf.difficulty === 1 ? 'rgba(34, 197, 94, 0.15)' : wf.difficulty === 2 ? 'rgba(251, 146, 60, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${wf.difficulty === 1 ? '#22c55e' : wf.difficulty === 2 ? '#fb923c' : '#ef4444'}; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid ${wf.difficulty === 1 ? 'rgba(34, 197, 94, 0.3)' : wf.difficulty === 2 ? 'rgba(251, 146, 60, 0.3)' : 'rgba(239, 68, 68, 0.3)'}>
                         Level ${wf.difficulty}
                       </div>
                     </div>
-                    <p style="color: #64748b; font-size: 13px; line-height: 1.6;">${wf.description}</p>
+                    <p style="color: #94a3b8; font-size: 13px; line-height: 1.6;">${wf.description}</p>
                   </div>
                   <div style="display: flex; gap: 10px; margin-top: 16px;">
                     <button onclick="window.copyWorkflowJSON('${wf.json.replace(/'/g, "\\'")}')" style="
                       flex: 1;
                       padding: 10px 12px;
-                      background: #667eea;
+                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
                       color: white;
                       border: none;
-                      border-radius: 6px;
+                      border-radius: 8px;
                       cursor: pointer;
                       font-size: 12px;
                       font-weight: 600;
-                      transition: background 0.3s;
-                    " onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                      transition: all 0.3s;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                       📋 Copy JSON
                     </button>
                     <button onclick="window.downloadWorkflowJSON('${wf.title.replace(/'/g, "\\'")}', '${wf.json.replace(/'/g, "\\'")}')" style="
                       flex: 1;
                       padding: 10px 12px;
-                      background: #10b981;
-                      color: white;
-                      border: none;
-                      border-radius: 6px;
+                      background: rgba(34, 197, 94, 0.15);
+                      color: #22c55e;
+                      border: 1px solid rgba(34, 197, 94, 0.3);
+                      border-radius: 8px;
                       cursor: pointer;
                       font-size: 12px;
                       font-weight: 600;
-                      transition: background 0.3s;
-                    " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                      transition: all 0.3s;
+                    " onmouseover="this.style.background='rgba(34, 197, 94, 0.25)'" onmouseout="this.style.background='rgba(34, 197, 94, 0.15)'">
                       ⬇️ Download
                     </button>
                   </div>
@@ -754,9 +801,9 @@ function renderMainApp() {
           <!-- Setup Guides -->
           <div id="resource-guides" class="resource-content" style="display: none;">
             ${BOOTCAMP.resources.setupGuides.map(guide => `
-              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
-                <h3 style="color: #0f172a; margin-bottom: 12px; font-size: 18px;">${guide.icon} ${guide.title}</h3>
-                <ol style="margin-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+              <div style="margin-bottom: 24px; border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; padding: 24px; background: rgba(99, 102, 241, 0.05);">
+                <h3 style="color: #f1f5f9; margin-bottom: 16px; font-size: 18px;">${guide.icon} ${guide.title}</h3>
+                <ol style="margin-left: 20px; color: #cbd5e1; font-size: 14px; line-height: 2;">
                   ${guide.steps.map(step => `<li style="margin-bottom: 8px;">${step}</li>`).join('')}
                 </ol>
               </div>
@@ -770,13 +817,15 @@ function renderMainApp() {
       bottom: 20px;
       right: 20px;
       padding: 12px 20px;
-      background: #10b981;
+      background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
       color: white;
       border-radius: 8px;
       font-size: 14px;
+      font-weight: 600;
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
     ">
       ✓ Saved to database
     </div>
@@ -918,6 +967,14 @@ window.handleGoogleLogin = async function() {
   }
 };
 
+window.goToLogin = function() {
+  renderLoginScreen();
+};
+
+window.scrollToFeatures = function() {
+  alert('Feature information: Complete bootcamp with progress tracking, assessments, analytics, and resources!');
+};
+
 window.handleEmailLogin = async function() {
   const email = $('#email').value;
   const password = $('#password').value;
@@ -1038,7 +1095,7 @@ window.switchResourceTab = function(tabName) {
   // Remove active class from all buttons
   document.querySelectorAll('.resource-tab-btn').forEach(btn => {
     btn.style.borderBottomColor = 'transparent';
-    btn.style.color = '#64748b';
+    btn.style.color = '#94a3b8';
   });
   
   // Show selected content
@@ -1046,8 +1103,8 @@ window.switchResourceTab = function(tabName) {
   if (content) {
     content.style.display = 'block';
     // Find and highlight the clicked button
-    event.target.style.borderBottomColor = '#667eea';
-    event.target.style.color = '#667eea';
+    event.target.style.borderBottomColor = '#6366f1';
+    event.target.style.color = '#6366f1';
   }
 };
 
