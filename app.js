@@ -215,8 +215,158 @@ const BOOTCAMP = {
       ],
       homework: "Complete capstone: Build error-resistant 4+ node workflow"
     } 
-  ]
-};
+  ],
+  resources: {
+    tutorials: [
+      {
+        day: 1,
+        title: "N8N Basics",
+        youtube: [
+          { title: "N8N Introduction & Setup", url: "https://www.youtube.com/watch?v=example1" },
+          { title: "Dashboard Tour & Navigation", url: "https://www.youtube.com/watch?v=example2" },
+          { title: "Creating Your First Workflow", url: "https://www.youtube.com/watch?v=example3" }
+        ]
+      },
+      {
+        day: 2,
+        title: "Data Flow & Nodes",
+        youtube: [
+          { title: "Understanding JSON Data", url: "https://www.youtube.com/watch?v=example4" },
+          { title: "Node Input/Output Explained", url: "https://www.youtube.com/watch?v=example5" },
+          { title: "Data Transformation with Set Node", url: "https://www.youtube.com/watch?v=example6" }
+        ]
+      },
+      {
+        day: 3,
+        title: "Triggers",
+        youtube: [
+          { title: "All 5 Trigger Types Explained", url: "https://www.youtube.com/watch?v=example7" },
+          { title: "Webhook Setup Guide", url: "https://www.youtube.com/watch?v=example8" },
+          { title: "Cron Expressions Explained", url: "https://www.youtube.com/watch?v=example9" }
+        ]
+      },
+      {
+        day: 4,
+        title: "Email & Slack",
+        youtube: [
+          { title: "Email Integration Guide", url: "https://www.youtube.com/watch?v=example10" },
+          { title: "Slack OAuth Setup", url: "https://www.youtube.com/watch?v=example11" },
+          { title: "Conditional Message Routing", url: "https://www.youtube.com/watch?v=example12" }
+        ]
+      },
+      {
+        day: 5,
+        title: "Google Sheets",
+        youtube: [
+          { title: "Google Sheets Integration", url: "https://www.youtube.com/watch?v=example13" },
+          { title: "OAuth Authentication", url: "https://www.youtube.com/watch?v=example14" },
+          { title: "CRUD Operations", url: "https://www.youtube.com/watch?v=example15" }
+        ]
+      }
+    ],
+    workflows: [
+      {
+        day: 1,
+        title: "Simple Webhook to Email",
+        description: "Basic workflow: Receive data via webhook and send email notification",
+        json: '{"nodes": [{"name": "Webhook", "type": "webhook"}, {"name": "Email", "type": "email"}]}',
+        difficulty: 1
+      },
+      {
+        day: 2,
+        title: "Data Transform Workflow",
+        description: "Split and transform incoming data using Set node",
+        json: '{"nodes": [{"name": "Input", "type": "trigger"}, {"name": "Set", "type": "set"}, {"name": "Output", "type": "output"}]}',
+        difficulty: 1
+      },
+      {
+        day: 3,
+        title: "Scheduled Email Report",
+        description: "Send emails on a schedule (e.g., daily at 9 AM)",
+        json: '{"nodes": [{"name": "Schedule", "type": "schedule"}, {"name": "Email", "type": "email"}]}',
+        difficulty: 2
+      },
+      {
+        day: 4,
+        title: "Slack Notification System",
+        description: "Route different messages to Slack based on conditions",
+        json: '{"nodes": [{"name": "Trigger", "type": "webhook"}, {"name": "Switch", "type": "switch"}, {"name": "Slack", "type": "slack"}]}',
+        difficulty: 2
+      },
+      {
+        day: 5,
+        title: "Lead Management Workflow",
+        description: "Complete workflow: Form → Sheets → Email → Slack",
+        json: '{"nodes": [{"name": "Form", "type": "form"}, {"name": "Sheets", "type": "sheets"}, {"name": "Email", "type": "email"}, {"name": "Slack", "type": "slack"}]}',
+        difficulty: 3
+      }
+    ],
+    setupGuides: [
+      {
+        title: "N8N Installation Guide",
+        steps: [
+          "Go to n8n.io and sign up for free account",
+          "Choose your preferred deployment (cloud or self-hosted)",
+          "Complete email verification",
+          "Access your N8N dashboard",
+          "Explore the available nodes and integrations"
+        ],
+        icon: "🚀"
+      },
+      {
+        title: "Google OAuth Setup",
+        steps: [
+          "Go to Google Cloud Console (console.cloud.google.com)",
+          "Create a new project",
+          "Enable Google Sheets API",
+          "Create OAuth 2.0 credentials (Desktop app)",
+          "Copy Client ID and Secret",
+          "Add credentials to N8N Google Sheets node"
+        ],
+        icon: "🔐"
+      },
+      {
+        title: "Slack Integration Setup",
+        steps: [
+          "Go to api.slack.com/apps",
+          "Create New App",
+          "Select 'From scratch'",
+          "Enter app name and workspace",
+          "Navigate to 'OAuth & Permissions'",
+          "Add required scopes",
+          "Install app to workspace",
+          "Copy Bot Token and add to N8N"
+        ],
+        icon: "💬"
+      },
+      {
+        title: "Webhook Configuration",
+        steps: [
+          "Create Webhook node in N8N",
+          "Copy the provided webhook URL",
+          "Configure authentication if needed",
+          "Test webhook with curl or Postman",
+          "Verify data is received in N8N",
+          "Configure response format"
+        ],
+        icon: "🪝"
+      },
+      {
+        title: "Email Setup (Gmail SMTP)",
+        steps: [
+          "Enable 2-Factor Authentication on Gmail",
+          "Generate App Password (not regular password)",
+          "Go to N8N Gmail/Email node",
+          "Select SMTP as authentication method",
+          "Enter email: your@gmail.com",
+          "Enter SMTP server: smtp.gmail.com:587",
+          "Paste App Password as password"
+        ],
+        icon: "📧"
+      }
+    ]
+  }
+}
 
 // DOM Helpers
 const $ = (selector) => document.querySelector(selector);
@@ -338,7 +488,9 @@ function renderMainApp() {
         <button class="tab-btn" onclick="window.switchTab('export')">
           💾 Export
         </button>
-      </div>
+        <button class="tab-btn" onclick="window.switchTab('resources')">
+          📖 Resources
+        </button>
       
       <!-- Tabs Content -->
       <div class="tabs-content">
@@ -489,8 +641,96 @@ function renderMainApp() {
             </button>
           </div>
         </div>
+        
+        <!-- Resources Tab -->
+        <div id="resources" class="tab-pane">
+          <h2>📖 Learning Resources</h2>
+          
+          <!-- Resources Navigation -->
+          <div class="resource-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; flex-wrap: wrap;">
+            <button class="resource-tab-btn active" onclick="window.switchResourceTab('tutorials')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+              🎥 Video Tutorials
+            </button>
+            <button class="resource-tab-btn" onclick="window.switchResourceTab('workflows')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+              ⚙️ Workflows
+            </button>
+            <button class="resource-tab-btn" onclick="window.switchResourceTab('guides')" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s;">
+              📚 Setup Guides
+            </button>
+          </div>
+          
+          <!-- Tutorials -->
+          <div id="resource-tutorials" class="resource-content" style="display: block;">
+            ${BOOTCAMP.resources.tutorials.map(tut => `
+              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
+                <h3 style="color: #0f172a; margin-bottom: 12px;">📺 Day ${tut.day}: ${tut.title}</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${tut.youtube.map(vid => `
+                    <a href="${vid.url}" target="_blank" style="
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      padding: 10px 12px;
+                      background: white;
+                      border: 1px solid #e2e8f0;
+                      border-radius: 6px;
+                      text-decoration: none;
+                      color: #667eea;
+                      font-size: 14px;
+                      transition: all 0.3s;
+                    " onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='white'">
+                      ▶️ ${vid.title}
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <!-- Workflows -->
+          <div id="resource-workflows" class="resource-content" style="display: none;">
+            ${BOOTCAMP.resources.workflows.map(wf => `
+              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
+                  <div>
+                    <h3 style="color: #0f172a; margin-bottom: 4px;">⚙️ ${wf.title}</h3>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 12px;">${wf.description}</p>
+                    <div style="display: inline-block; background: ${wf.difficulty === 1 ? '#dbeafe' : wf.difficulty === 2 ? '#fef3c7' : '#fee2e2'}; color: ${wf.difficulty === 1 ? '#1e40af' : wf.difficulty === 2 ? '#92400e' : '#991b1b'}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                      Level ${wf.difficulty}
+                    </div>
+                  </div>
+                  <button onclick="window.copyWorkflowJSON('${wf.json.replace(/'/g, "\\'")}')" style="
+                    padding: 8px 16px;
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    transition: background 0.3s;
+                  " onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                    📋 Copy JSON
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <!-- Setup Guides -->
+          <div id="resource-guides" class="resource-content" style="display: none;">
+            ${BOOTCAMP.resources.setupGuides.map(guide => `
+              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
+                <h3 style="color: #0f172a; margin-bottom: 12px; font-size: 18px;">${guide.icon} ${guide.title}</h3>
+                <ol style="margin-left: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
+                  ${guide.steps.map(step => `<li style="margin-bottom: 8px;">${step}</li>`).join('')}
+                </ol>
+              </div>
+            `).join('')}
+          </div>
+        </div>
       </div>
-    </div>
     
     <div id="save-status" style="
       position: fixed;
@@ -752,6 +992,51 @@ window.handleExportCSV = async function() {
     }
   } catch (error) {
     alert('Error exporting CSV: ' + error.message);
+  }
+};
+
+/**
+ * Switch resource tabs
+ */
+window.switchResourceTab = function(tabName) {
+  // Hide all resource content
+  document.querySelectorAll('.resource-content').forEach(el => el.style.display = 'none');
+  
+  // Remove active class from all buttons
+  document.querySelectorAll('.resource-tab-btn').forEach(btn => {
+    btn.style.borderBottomColor = 'transparent';
+    btn.style.color = '#64748b';
+  });
+  
+  // Show selected content
+  const content = document.getElementById(`resource-${tabName}`);
+  if (content) {
+    content.style.display = 'block';
+    // Find and highlight the clicked button
+    event.target.style.borderBottomColor = '#667eea';
+    event.target.style.color = '#667eea';
+  }
+};
+
+/**
+ * Copy workflow JSON to clipboard
+ */
+window.copyWorkflowJSON = function(json) {
+  try {
+    navigator.clipboard.writeText(json).then(() => {
+      alert('✓ Workflow JSON copied to clipboard!');
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = json;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('✓ Workflow JSON copied to clipboard!');
+    });
+  } catch (error) {
+    alert('Error copying to clipboard: ' + error.message);
   }
 };
 
