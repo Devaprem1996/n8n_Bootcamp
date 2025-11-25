@@ -33,9 +33,10 @@ const AUTO_SAVE_DELAY = 2000; // Save 2 seconds after last change
 
 // Router configuration
 const routes = {
-  'landing': { protectedRoute: false, render: renderLandingPage },
-  'login': { protectedRoute: false, render: renderLoginScreen },
-  'main': { protectedRoute: true, render: renderMainApp }
+  'landing': { path: '/', protectedRoute: false, render: renderLandingPage },
+  'login': { path: '/login', protectedRoute: false, render: renderLoginScreen },
+  'main': { path: '/dashboard', protectedRoute: true, render: renderMainApp },
+  'dashboardUsers': { path: '/dashboard/users', protectedRoute: true, render: renderMainApp }
 };
 
 // ============================================
@@ -48,7 +49,7 @@ const routes = {
 function requireAuth() {
   if (!appState.currentUser) {
     console.log('ℹ️ Route requires authentication, redirecting to login');
-    navigateTo('login');
+    navigateTo('/login');
     return false;
   }
   return true;
@@ -57,23 +58,23 @@ function requireAuth() {
 /**
  * Navigate to a specific page with route protection
  */
-function navigateTo(page) {
-  const route = routes[page];
+function navigateTo(path) {
+  const route = Object.values(routes).find(r => r.path === path);
   
   if (!route) {
-    console.error('❌ Route not found:', page);
-    navigateTo('landing');
+    console.error('❌ Route not found:', path);
+    navigateTo('/');
     return;
   }
   
   // Check if route is protected and user is not authenticated
   if (route.protectedRoute && !appState.currentUser) {
     console.log('🔒 Attempting to access protected route without auth');
-    navigateTo('login');
+    navigateTo('/login');
     return;
   }
   
-  appState.currentPage = page;
+  appState.currentPage = Object.keys(routes).find(key => routes[key] === route);
   route.render();
 }
 
@@ -488,16 +489,16 @@ async function initializeApp() {
       console.log('✅ User logged in:', user.email)
       setCurrentUser(user);
       await loadUserProgress();
-      navigateTo('main');
+      navigateTo('/dashboard');
     } else {
       console.log('ℹ️ No user logged in, showing landing page')
-      navigateTo('landing');
+      navigateTo('/');
     }
     
     appState.isInitialized = true;
   } catch (error) {
     console.error('❌ Error initializing app:', error)
-    navigateTo('landing');
+    navigateTo('/');
   }
 }
 
@@ -1062,7 +1063,7 @@ window.handleGoogleLogin = async function() {
     if (result.success) {
       setCurrentUser(result.user);
       await loadUserProgress();
-      navigateTo('main');
+      navigateTo('/dashboard');
     } else {
       alert('Google login failed. Please use email/password instead.');
     }
@@ -1073,7 +1074,7 @@ window.handleGoogleLogin = async function() {
 };
 
 window.goToLogin = function() {
-  navigateTo('login');
+  navigateTo('/login');
 };
 
 window.scrollToFeatures = function() {
@@ -1095,7 +1096,7 @@ window.handleEmailLogin = async function() {
     if (result.success) {
       setCurrentUser(result.user);
       await loadUserProgress();
-      navigateTo('main');
+      navigateTo('/dashboard');
     } else {
       alert('Login failed: ' + result.error);
     }
@@ -1125,7 +1126,7 @@ window.handleEmailSignup = async function() {
     if (result.success) {
       setCurrentUser(result.user);
       await loadUserProgress();
-      navigateTo('main');
+      navigateTo('/dashboard');
     } else {
       alert('Signup failed: ' + result.error);
     }
@@ -1164,11 +1165,11 @@ window.handleLogout = async function() {
     setAutoSaveTimeout(null);
     
     console.log('✅ Logout successful, redirecting to landing page');
-    navigateTo('landing');
+    navigateTo('/');
   } catch (error) {
     console.error('❌ Logout error:', error);
     // Force navigate to landing even if error occurs
-    navigateTo('landing');
+    navigateTo('/');
   }
 };
 

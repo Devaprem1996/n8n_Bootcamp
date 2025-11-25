@@ -1,14 +1,14 @@
 # Routing & Protected Routes Documentation
 
 ## Overview
-The Vidana N8N BootCamp application now implements a robust routing system with protected routes, ensuring that only authenticated users can access specific pages.
+The Vidana N8N BootCamp application now implements a robust path-based routing system with protected routes, ensuring that only authenticated users can access specific pages.
 
 ## Architecture
 
 ### Route Types
 
 #### 1. **Landing Page** (Unprotected)
-- **Route ID**: `landing`
+- **Path**: `/`
 - **Protected**: ❌ No
 - **Access**: Everyone
 - **Features**:
@@ -17,7 +17,7 @@ The Vidana N8N BootCamp application now implements a robust routing system with 
   - Introduces Vidana N8N BootCamp
 
 #### 2. **Login Page** (Unprotected)
-- **Route ID**: `login`
+- **Path**: `/login`
 - **Protected**: ❌ No
 - **Access**: Only unauthenticated users
 - **Features**:
@@ -27,7 +27,7 @@ The Vidana N8N BootCamp application now implements a robust routing system with 
   - Dark theme UI
 
 #### 3. **Main App** (Protected)
-- **Route ID**: `main`
+- **Path**: `/dashboard`
 - **Protected**: ✅ Yes
 - **Access**: Only authenticated users
 - **Features**:
@@ -37,13 +37,22 @@ The Vidana N8N BootCamp application now implements a robust routing system with 
   - Resources & workflows
   - Export data
 
+#### 4. **Dashboard Users** (Protected)
+- **Path**: `/dashboard/users`
+- **Protected**: ✅ Yes
+- **Access**: Only authenticated users
+- **Features**:
+  - Renders the main app
+
+
 ### Route Configuration
 
 ```javascript
 const routes = {
-  'landing': { protectedRoute: false, render: renderLandingPage },
-  'login': { protectedRoute: false, render: renderLoginScreen },
-  'main': { protectedRoute: true, render: renderMainApp }
+  'landing': { path: '/', protectedRoute: false, render: renderLandingPage },
+  'login': { path: '/login', protectedRoute: false, render: renderLoginScreen },
+  'main': { path: '/dashboard', protectedRoute: true, render: renderMainApp },
+  'dashboardUsers': { path: '/dashboard/users', protectedRoute: true, render: renderMainApp }
 };
 ```
 
@@ -52,23 +61,23 @@ const routes = {
 ### Primary Navigation Function
 
 ```javascript
-function navigateTo(page) {
-  const route = routes[page];
+function navigateTo(path) {
+  const route = Object.values(routes).find(r => r.path === path);
   
   if (!route) {
-    console.error('Route not found:', page);
-    navigateTo('landing');
+    console.error('Route not found:', path);
+    navigateTo('/');
     return;
   }
   
   // Check if route is protected and user is not authenticated
   if (route.protectedRoute && !appState.currentUser) {
     console.log('Attempting to access protected route without auth');
-    navigateTo('login');
+    navigateTo('/login');
     return;
   }
   
-  appState.currentPage = page;
+  appState.currentPage = Object.keys(routes).find(key => routes[key] === route);
   route.render();
 }
 ```
@@ -79,7 +88,7 @@ function navigateTo(page) {
 function requireAuth() {
   if (!appState.currentUser) {
     console.log('Route requires authentication, redirecting to login');
-    navigateTo('login');
+    navigateTo('/login');
     return false;
   }
   return true;
@@ -92,7 +101,7 @@ function requireAuth() {
 ```javascript
 const appState = {
   currentUser: null,           // Currently logged-in user
-  currentPage: 'landing',      // Current page route
+  currentPage: '/',      // Current page path
   userProgress: {              // User's bootcamp progress
     completedTasks: Array(9).fill(false),
     taskNotes: {},
@@ -143,12 +152,12 @@ function setAutoSaveTimeout(timeout) {
 
 ### Login Flow
 1. User arrives at landing page
-2. Clicks "Get Started" → redirects to login
+2. Clicks "Get Started" → redirects to /login
 3. Enters credentials (email/password or Google)
 4. Supabase authenticates user
 5. User object saved to `appState.currentUser`
 6. User progress loaded from database
-7. `navigateTo('main')` renders protected dashboard
+7. `navigateTo('/dashboard')` renders protected dashboard
 
 ### Logout Flow
 1. User clicks "Logout" button
@@ -156,21 +165,21 @@ function setAutoSaveTimeout(timeout) {
 3. Supabase `signOut()` is called
 4. `appState.currentUser` is set to `null`
 5. Auto-save timeout is cleared
-6. `navigateTo('landing')` redirects to landing page
+6. `navigateTo('/')` redirects to landing page
 7. Session is completely cleared
 
 ### Protected Page Access
-1. Unauthenticated user attempts to access `/main` route
+1. Unauthenticated user attempts to access `/dashboard` route
 2. `requireAuth()` checks `appState.currentUser`
-3. If `null`, redirects to login page
+3. If `null`, redirects to /login page
 4. If authenticated, page renders normally
 
 ## Window Functions (Global Exports)
 
 ### Navigation
 ```javascript
-window.navigateTo(page)          // Navigate to any route
-window.goToLogin()               // Navigate to login
+window.navigateTo(path)          // Navigate to any route
+window.goToLogin()               // Navigate to /login
 ```
 
 ### Authentication
@@ -220,11 +229,11 @@ window.handleExportCSV()         // Export progress as CSV
 ## User Flow Diagram
 
 ```
-Landing Page (unprotected)
+/ (unprotected)
     ↓
   [Get Started]
     ↓
-Login Page (unprotected)
+/login (unprotected)
     ↓
   [Login/Signup] → Supabase Auth
     ↓
@@ -232,9 +241,9 @@ Login Page (unprotected)
     ↓
 Load User Progress from Database
     ↓
-navigateTo('main') 
+navigateTo('/dashboard') 
     ↓
-Main App Dashboard (protected)
+/dashboard (protected)
     ├─ Learning Path
     ├─ Assessments
     ├─ Performance
@@ -245,9 +254,9 @@ Main App Dashboard (protected)
     ↓
 signOut() → Clear appState
     ↓
-navigateTo('landing')
+navigateTo('/')
     ↓
-Landing Page (unprotected)
+/ (unprotected)
 ```
 
 ## Best Practices
@@ -255,7 +264,7 @@ Landing Page (unprotected)
 ### 1. Always Use `navigateTo()` Instead of Direct Render Calls
 ```javascript
 // ✅ Good
-navigateTo('main');
+navigateTo('/dashboard');
 
 // ❌ Bad
 renderMainApp();
@@ -316,6 +325,12 @@ function protectedFunction() {
   if (!requireAuth()) return;  // Must be first line
   // ... rest of function
 }
+```
+
+### Issue: Route Not Found
+**Solution**: Check if the path exists in the `routes` object and that you are using `navigateTo` with the correct path.
+```javascript
+navigateTo('/dashboard');
 ```
 
 ## Environment Variables
