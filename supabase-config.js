@@ -114,13 +114,19 @@ export async function signInWithEmail(email, password) {
  * Sign out
  */
 export async function signOut() {
-  const sb = await initSupabase()
-  const { error } = await sb.auth.signOut()
-  if (error) {
-    console.error('❌ Sign out error:', error)
-    return false
+  try {
+    const sb = await initSupabase()
+    const { error } = await sb.auth.signOut()
+    if (error) {
+      console.error('❌ Sign out error:', error)
+      return { success: false, error: error.message }
+    }
+    console.log('✅ Sign out successful')
+    return { success: true }
+  } catch (error) {
+    console.error('❌ Sign out exception:', error)
+    return { success: false, error: error.message }
   }
-  return true
 }
 
 /**

@@ -4,24 +4,106 @@ import {
   signInWithGoogle, 
   signUpWithEmail, 
   signInWithEmail,
+  signOut,
   saveProgress,
   loadProgress,
   exportProgressJSON,
   exportProgressCSV
 } from './supabase-config.js';
 
-// Global state
-let currentUser = null;
-let userProgress = {
-  completedTasks: Array(9).fill(false),
-  taskNotes: {},
-  progressPercent: 0,
-  cohort: 'default'
+// ============================================
+// ROUTING & STATE MANAGEMENT
+// ============================================
+
+// Application state
+const appState = {
+  currentUser: null,
+  currentPage: 'landing', // landing, login, main
+  userProgress: {
+    completedTasks: Array(9).fill(false),
+    taskNotes: {},
+    progressPercent: 0,
+    cohort: 'default'
+  },
+  saveTimeout: null,
+  isInitialized: false
 };
 
-// Auto-save settings
-let saveTimeout = null;
 const AUTO_SAVE_DELAY = 2000; // Save 2 seconds after last change
+
+// Router configuration
+const routes = {
+  'landing': { protectedRoute: false, render: renderLandingPage },
+  'login': { protectedRoute: false, render: renderLoginScreen },
+  'main': { protectedRoute: true, render: renderMainApp }
+};
+
+// ============================================
+// ROUTE PROTECTION & NAVIGATION
+// ============================================
+
+/**
+ * Protected route middleware - redirects if not authenticated
+ */
+function requireAuth() {
+  if (!appState.currentUser) {
+    console.log('ℹ️ Route requires authentication, redirecting to login');
+    navigateTo('login');
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Navigate to a specific page with route protection
+ */
+function navigateTo(page) {
+  const route = routes[page];
+  
+  if (!route) {
+    console.error('❌ Route not found:', page);
+    navigateTo('landing');
+    return;
+  }
+  
+  // Check if route is protected and user is not authenticated
+  if (route.protectedRoute && !appState.currentUser) {
+    console.log('🔒 Attempting to access protected route without auth');
+    navigateTo('login');
+    return;
+  }
+  
+  appState.currentPage = page;
+  route.render();
+}
+
+// ============================================
+// GLOBAL STATE GETTERS & SETTERS
+// ============================================
+
+function getCurrentUser() {
+  return appState.currentUser;
+}
+
+function setCurrentUser(user) {
+  appState.currentUser = user;
+}
+
+function getUserProgress() {
+  return appState.userProgress;
+}
+
+function setUserProgress(progress) {
+  appState.userProgress = { ...appState.userProgress, ...progress };
+}
+
+function getAutoSaveTimeout() {
+  return appState.saveTimeout;
+}
+
+function setAutoSaveTimeout(timeout) {
+  appState.saveTimeout = timeout;
+}
 
 // Bootcamp curriculum data with detailed visual descriptions
 const BOOTCAMP = {
@@ -393,21 +475,29 @@ async function initializeApp() {
   try {
     console.log('🚀 Initializing Vidana N8N Bootcamp...')
     
-    // Check if user is already logged in
-    const user = await getCurrentUser();
+    if (appState.isInitialized) {
+      console.log('ℹ️ App already initialized, skipping');
+      return;
+    }
+    
+    // Check if user is already logged in via Supabase
+    const { getCurrentUser: getSupabaseUser } = await import('./supabase-config.js');
+    const user = await getSupabaseUser();
     
     if (user) {
       console.log('✅ User logged in:', user.email)
-      currentUser = user;
+      setCurrentUser(user);
       await loadUserProgress();
-      renderMainApp();
+      navigateTo('main');
     } else {
       console.log('ℹ️ No user logged in, showing landing page')
-      renderLandingPage();
+      navigateTo('landing');
     }
+    
+    appState.isInitialized = true;
   } catch (error) {
     console.error('❌ Error initializing app:', error)
-    renderLandingPage();
+    navigateTo('landing');
   }
 }
 
@@ -503,8 +593,13 @@ function renderLoginScreen() {
  * Render main application dashboard
  */
 function renderMainApp() {
+  // Protected route check
+  if (!requireAuth()) return;
+  
   const app = $('#app');
-  const completedCount = userProgress.completedTasks.filter(t => t).length;
+  const user = appState.currentUser;
+  const progress = appState.userProgress;
+  const completedCount = progress.completedTasks.filter(t => t).length;
   const progressPercent = Math.round((completedCount / 9) * 100);
   
   app.innerHTML = `
@@ -513,7 +608,7 @@ function renderMainApp() {
       <div class="app-header">
         <div class="header-content">
           <h1>Vidana N8N BootCamp</h1>
-          <p>Welcome, ${currentUser.email} • ${completedCount}/9 Days Complete</p>
+          <p>Welcome, ${user.email} • ${completedCount}/9 Days Complete</p>
         </div>
         <button class="btn-logout" onclick="window.handleLogout()">Logout</button>
       </div>
@@ -854,8 +949,10 @@ function switchTab(tabName) {
  * Toggle day completion
  */
 function toggleDay(index) {
-  userProgress.completedTasks[index] = !userProgress.completedTasks[index];
-  console.log(`✓ Day ${index + 1} toggled:`, userProgress.completedTasks[index]);
+  if (!requireAuth()) return;
+  const progress = appState.userProgress;
+  progress.completedTasks[index] = !progress.completedTasks[index];
+  console.log(`✓ Day ${index + 1} toggled:`, progress.completedTasks[index]);
   autoSaveProgress();
   renderMainApp();
 }
@@ -864,7 +961,9 @@ function toggleDay(index) {
  * Update day notes
  */
 function updateDayNotes(index, notes) {
-  userProgress.taskNotes[`day-${index + 1}`] = notes;
+  if (!requireAuth()) return;
+  const progress = appState.userProgress;
+  progress.taskNotes[`day-${index + 1}`] = notes;
   console.log(`✏️ Notes updated for Day ${index + 1}`);
   autoSaveProgress();
 }
@@ -874,24 +973,27 @@ function updateDayNotes(index, notes) {
  */
 function autoSaveProgress() {
   // Clear existing timeout
-  if (saveTimeout) clearTimeout(saveTimeout);
+  const oldTimeout = getAutoSaveTimeout();
+  if (oldTimeout) clearTimeout(oldTimeout);
   
   // Set new timeout
-  saveTimeout = setTimeout(async () => {
+  const newTimeout = setTimeout(async () => {
     try {
-      if (!currentUser || !currentUser.id) {
+      const user = appState.currentUser;
+      if (!user || !user.id) {
         console.error('❌ Not logged in, cannot save');
         return;
       }
       
       console.log('💾 Auto-saving progress...');
-      const completed = userProgress.completedTasks.filter(t => t).length;
+      const progress = appState.userProgress;
+      const completed = progress.completedTasks.filter(t => t).length;
       const progressPercent = Math.round((completed / 9) * 100);
       
-      const result = await saveProgress(currentUser.id, {
-        ...userProgress,
+      const result = await saveProgress(user.id, {
+        ...progress,
         progressPercent: progressPercent,
-        email: currentUser.email
+        email: user.email
       });
       
       if (result.success) {
@@ -904,6 +1006,8 @@ function autoSaveProgress() {
       console.error('❌ Auto-save error:', error);
     }
   }, AUTO_SAVE_DELAY);
+  
+  setAutoSaveTimeout(newTimeout);
 }
 
 /**
@@ -926,21 +1030,22 @@ async function loadUserProgress() {
   try {
     console.log('📂 Loading user progress...');
     
-    if (!currentUser || !currentUser.id) {
+    const user = appState.currentUser;
+    if (!user || !user.id) {
       console.log('ℹ️ No user ID, skipping load');
       return;
     }
     
-    const result = await loadProgress(currentUser.id);
+    const result = await loadProgress(user.id);
     
     if (result.success && result.data) {
-      userProgress = {
+      setUserProgress({
         completedTasks: result.data.completed_tasks || Array(9).fill(false),
         taskNotes: result.data.task_notes || {},
         progressPercent: result.data.progress_percent || 0,
         cohort: result.data.cohort || 'default'
-      };
-      console.log('✅ Progress loaded successfully:', userProgress);
+      });
+      console.log('✅ Progress loaded successfully:', appState.userProgress);
     } else {
       console.log('ℹ️ No previous progress found, using defaults');
     }
@@ -955,9 +1060,9 @@ window.handleGoogleLogin = async function() {
     console.log('🔐 Starting Google login...');
     const result = await signInWithGoogle();
     if (result.success) {
-      currentUser = result.user;
+      setCurrentUser(result.user);
       await loadUserProgress();
-      renderMainApp();
+      navigateTo('main');
     } else {
       alert('Google login failed. Please use email/password instead.');
     }
@@ -968,7 +1073,7 @@ window.handleGoogleLogin = async function() {
 };
 
 window.goToLogin = function() {
-  renderLoginScreen();
+  navigateTo('login');
 };
 
 window.scrollToFeatures = function() {
@@ -988,9 +1093,9 @@ window.handleEmailLogin = async function() {
     console.log('📧 Logging in with email...');
     const result = await signInWithEmail(email, password);
     if (result.success) {
-      currentUser = result.user;
+      setCurrentUser(result.user);
       await loadUserProgress();
-      renderMainApp();
+      navigateTo('main');
     } else {
       alert('Login failed: ' + result.error);
     }
@@ -1018,9 +1123,9 @@ window.handleEmailSignup = async function() {
     console.log('📝 Creating account...');
     const result = await signUpWithEmail(email, password);
     if (result.success) {
-      currentUser = result.user;
+      setCurrentUser(result.user);
       await loadUserProgress();
-      renderMainApp();
+      navigateTo('main');
     } else {
       alert('Signup failed: ' + result.error);
     }
@@ -1033,16 +1138,37 @@ window.handleEmailSignup = async function() {
 window.handleLogout = async function() {
   try {
     console.log('👋 Logging out...');
-    currentUser = null;
-    userProgress = {
+    
+    // Call Supabase sign out
+    try {
+      const result = await signOut();
+      if (!result.success) {
+        console.warn('⚠️ Supabase logout warning:', result.error);
+      }
+    } catch (error) {
+      console.warn('⚠️ Supabase logout error:', error);
+    }
+    
+    // Clear app state
+    setCurrentUser(null);
+    setUserProgress({
       completedTasks: Array(9).fill(false),
       taskNotes: {},
       progressPercent: 0,
       cohort: 'default'
-    };
-    renderLoginScreen();
+    });
+    
+    // Clear auto-save timeout
+    const timeout = getAutoSaveTimeout();
+    if (timeout) clearTimeout(timeout);
+    setAutoSaveTimeout(null);
+    
+    console.log('✅ Logout successful, redirecting to landing page');
+    navigateTo('landing');
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('❌ Logout error:', error);
+    // Force navigate to landing even if error occurs
+    navigateTo('landing');
   }
 };
 
@@ -1053,7 +1179,12 @@ window.autoSaveProgress = autoSaveProgress;
 
 window.handleExportJSON = async function() {
   try {
-    const result = await exportProgressJSON(currentUser.id, userProgress);
+    const user = appState.currentUser;
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+    const result = await exportProgressJSON(user.id, appState.userProgress);
     if (result.success) {
       const element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(result.data, null, 2)));
@@ -1070,7 +1201,12 @@ window.handleExportJSON = async function() {
 
 window.handleExportCSV = async function() {
   try {
-    const result = await exportProgressCSV(currentUser.id, userProgress);
+    const user = appState.currentUser;
+    if (!user) {
+      alert('Please log in first');
+      return;
+    }
+    const result = await exportProgressCSV(user.id, appState.userProgress);
     if (result.success) {
       const element = document.createElement('a');
       element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(result.data));
