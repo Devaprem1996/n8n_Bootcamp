@@ -81,7 +81,7 @@ function navigateTo(page) {
 // GLOBAL STATE GETTERS & SETTERS
 // ============================================
 
-function getCurrentUser() {
+function getAppCurrentUser() {
   return appState.currentUser;
 }
 
