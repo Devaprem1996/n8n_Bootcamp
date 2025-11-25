@@ -269,35 +269,49 @@ const BOOTCAMP = {
         day: 1,
         title: "Simple Webhook to Email",
         description: "Basic workflow: Receive data via webhook and send email notification",
-        json: '{"nodes": [{"name": "Webhook", "type": "webhook"}, {"name": "Email", "type": "email"}]}',
+        json: '{"nodes":[{"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[250,300],"parameters":{"authentication":"none","httpMethod":"POST","path":"webhook/test"}},{"id":"email","name":"Send Email","type":"n8n-nodes-base.sendGrid","typeVersion":1,"position":[650,300],"parameters":{"authentication":"sendgridApi","subject":"New Submission","toEmail":"test@example.com","message":"A new lead has been submitted"},"credentials":{"sendgridApi":{"id":"1","name":"SendGrid API"}}}],"connections":{"webhook":{"main":[[{"node":"email","branch":0,"type":"main","index":0}]]}}}',
         difficulty: 1
       },
       {
         day: 2,
         title: "Data Transform Workflow",
         description: "Split and transform incoming data using Set node",
-        json: '{"nodes": [{"name": "Input", "type": "trigger"}, {"name": "Set", "type": "set"}, {"name": "Output", "type": "output"}]}',
+        json: '{"nodes":[{"id":"trigger","name":"Manual Trigger","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[100,250],"parameters":{}},{"id":"set","name":"Set Node","type":"n8n-nodes-base.set","typeVersion":1,"position":[400,250],"parameters":{"assignments":{"assignments":[{"name":"firstName","value":"=\\"John\\""},{"name":"lastName","value":"=\\"Doe\\""},{"name":"email","value":"=\\"john@example.com\\""}]}}},{"id":"output","name":"Output","type":"n8n-nodes-base.noOp","typeVersion":1,"position":[700,250],"parameters":{}}],"connections":{"trigger":{"main":[[{"node":"set","branch":0,"type":"main","index":0}]]},"set":{"main":[[{"node":"output","branch":0,"type":"main","index":0}]]}}}',
         difficulty: 1
       },
       {
         day: 3,
         title: "Scheduled Email Report",
         description: "Send emails on a schedule (e.g., daily at 9 AM)",
-        json: '{"nodes": [{"name": "Schedule", "type": "schedule"}, {"name": "Email", "type": "email"}]}',
+        json: '{"nodes":[{"id":"schedule","name":"Schedule Trigger","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1,"position":[100,250],"parameters":{"rule":{"interval":[1],"triggerAtHour":9}},{"id":"email","name":"Send Report Email","type":"n8n-nodes-base.sendGrid","typeVersion":1,"position":[400,250],"parameters":{"authentication":"sendgridApi","subject":"Daily Report","toEmail":"admin@example.com","message":"Your daily report is ready"},"credentials":{"sendgridApi":{"id":"1","name":"SendGrid API"}}}],"connections":{"schedule":{"main":[[{"node":"email","branch":0,"type":"main","index":0}]]}}}',
         difficulty: 2
       },
       {
         day: 4,
         title: "Slack Notification System",
         description: "Route different messages to Slack based on conditions",
-        json: '{"nodes": [{"name": "Trigger", "type": "webhook"}, {"name": "Switch", "type": "switch"}, {"name": "Slack", "type": "slack"}]}',
+        json: '{"nodes":[{"id":"webhook","name":"Webhook Trigger","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[100,250],"parameters":{"authentication":"none","httpMethod":"POST","path":"slack-webhook"}},{"id":"switch","name":"Switch Node","type":"n8n-nodes-base.switch","typeVersion":1,"position":[400,250],"parameters":{"conditions":{"conditions":[{"name":"Success","value":"=\\"success\\"","operator":"equals"}]}}},{"id":"slack","name":"Send to Slack","type":"n8n-nodes-base.slack","typeVersion":1,"position":[700,250],"parameters":{"authentication":"slackApi","channel":"#general","text":"✅ Operation completed successfully"},"credentials":{"slackApi":{"id":"1","name":"Slack"}}}],"connections":{"webhook":{"main":[[{"node":"switch","branch":0,"type":"main","index":0}]]},"switch":{"main":[[{"node":"slack","branch":0,"type":"main","index":0}]]}}}',
         difficulty: 2
       },
       {
         day: 5,
         title: "Lead Management Workflow",
         description: "Complete workflow: Form → Sheets → Email → Slack",
-        json: '{"nodes": [{"name": "Form", "type": "form"}, {"name": "Sheets", "type": "sheets"}, {"name": "Email", "type": "email"}, {"name": "Slack", "type": "slack"}]}',
+        json: '{"nodes":[{"id":"webhook","name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[100,300],"parameters":{"authentication":"none","httpMethod":"POST","path":"leads"}},{"id":"sheets","name":"Google Sheets","type":"n8n-nodes-base.googleSheets","typeVersion":3,"position":[400,300],"parameters":{"authentication":"googleSheetsOAuth2","operation":"append","spreadsheetId":"1ABC123","sheetName":"Leads","values":"=\\"{{$json.name}},{{$json.email}},{{$json.phone}}\\""}},{"id":"email","name":"Send Email","type":"n8n-nodes-base.sendGrid","typeVersion":1,"position":[700,150],"parameters":{"authentication":"sendgridApi","subject":"Lead Received","toEmail":"=\\"{{$json.email}}\\"","message":"Thank you for your interest"}},{"id":"slack","name":"Notify Slack","type":"n8n-nodes-base.slack","typeVersion":1,"position":[700,450],"parameters":{"authentication":"slackApi","channel":"#leads","text":"📌 New lead: {{$json.name}} - {{$json.email}}"}}],"connections":{"webhook":{"main":[[{"node":"sheets","branch":0,"type":"main","index":0}]]},"sheets":{"main":[[{"node":"email","branch":0,"type":"main","index":0},{"node":"slack","branch":0,"type":"main","index":0}]]}}}',
+        difficulty: 3
+      },
+      {
+        day: 6,
+        title: "Invoice Generation",
+        description: "Generate invoices from form submissions",
+        json: '{"nodes":[{"id":"form","name":"Form Trigger","type":"n8n-nodes-base.formTrigger","typeVersion":1,"position":[100,300],"parameters":{"fields":{"fields":[{"name":"clientName","type":"text"},{"name":"amount","type":"number"},{"name":"description","type":"text"}]}}},{"id":"set","name":"Format Data","type":"n8n-nodes-base.set","typeVersion":1,"position":[400,300],"parameters":{"assignments":{"assignments":[{"name":"invoiceNumber","value":"=\\"INV-\\" + Date.now()"},{"name":"total","value":"={{$json.amount}}"},{"name":"date","value":"={{new Date().toLocaleDateString()}}"}]}}},{"id":"email","name":"Send Invoice","type":"n8n-nodes-base.sendGrid","typeVersion":1,"position":[700,300],"parameters":{"authentication":"sendgridApi","subject":"Invoice {{$json.invoiceNumber}}","toEmail":"=\\"{{$json.clientEmail}}\\"","message":"Invoice for {{$json.description}} - {{$json.total}}"}}],"connections":{"form":{"main":[[{"node":"set","branch":0,"type":"main","index":0}]]},"set":{"main":[[{"node":"email","branch":0,"type":"main","index":0}]]}}}',
+        difficulty: 3
+      },
+      {
+        day: 7,
+        title: "Multi-Source Report Aggregation",
+        description: "Combine data from multiple sources and send report",
+        json: '{"nodes":[{"id":"schedule","name":"Daily Schedule","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1,"position":[100,250],"parameters":{"rule":{"interval":[1],"triggerAtHour":9}}},{"id":"sheets1","name":"Get Sales Data","type":"n8n-nodes-base.googleSheets","typeVersion":3,"position":[400,100],"parameters":{"authentication":"googleSheetsOAuth2","operation":"read","spreadsheetId":"1ABC123","sheetName":"Sales"}},{"id":"sheets2","name":"Get Leads Data","type":"n8n-nodes-base.googleSheets","typeVersion":3,"position":[400,350],"parameters":{"authentication":"googleSheetsOAuth2","operation":"read","spreadsheetId":"1ABC123","sheetName":"Leads"}},{"id":"merge","name":"Merge Data","type":"n8n-nodes-base.set","typeVersion":1,"position":[700,225],"parameters":{"assignments":{"assignments":[{"name":"salesCount","value":"={{$json.length}}"},{"name":"leadsCount","value":"={{$json.length}}"}]}}},{"id":"email","name":"Send Report","type":"n8n-nodes-base.sendGrid","typeVersion":1,"position":[1000,225],"parameters":{"authentication":"sendgridApi","subject":"Daily Report","toEmail":"manager@example.com","message":"Sales: {{$json.salesCount}}, Leads: {{$json.leadsCount}}"}}],"connections":{"schedule":{"main":[[{"node":"sheets1","branch":0,"type":"main","index":0},{"node":"sheets2","branch":0,"type":"main","index":0}]]},"sheets1":{"main":[[{"node":"merge","branch":0,"type":"main","index":0}]]},"sheets2":{"main":[[{"node":"merge","branch":0,"type":"main","index":0}]]},"merge":{"main":[[{"node":"email","branch":0,"type":"main","index":0}]]}}}',
         difficulty: 3
       }
     ],
@@ -491,6 +505,7 @@ function renderMainApp() {
         <button class="tab-btn" onclick="window.switchTab('resources')">
           📖 Resources
         </button>
+      </div>
       
       <!-- Tabs Content -->
       <div class="tabs-content">
@@ -689,33 +704,51 @@ function renderMainApp() {
           
           <!-- Workflows -->
           <div id="resource-workflows" class="resource-content" style="display: none;">
-            ${BOOTCAMP.resources.workflows.map(wf => `
-              <div style="margin-bottom: 24px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: #f8fafc;">
-                <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px;">
-                  <div>
-                    <h3 style="color: #0f172a; margin-bottom: 4px;">⚙️ ${wf.title}</h3>
-                    <p style="color: #64748b; font-size: 14px; margin-bottom: 12px;">${wf.description}</p>
-                    <div style="display: inline-block; background: ${wf.difficulty === 1 ? '#dbeafe' : wf.difficulty === 2 ? '#fef3c7' : '#fee2e2'}; color: ${wf.difficulty === 1 ? '#1e40af' : wf.difficulty === 2 ? '#92400e' : '#991b1b'}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                      Level ${wf.difficulty}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+              ${BOOTCAMP.resources.workflows.map((wf, idx) => `
+                <div style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; background: white; transition: all 0.3s; display: flex; flex-direction: column;">
+                  <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                      <h3 style="color: #0f172a; font-size: 16px;">⚙️ ${wf.title}</h3>
+                      <div style="background: ${wf.difficulty === 1 ? '#dbeafe' : wf.difficulty === 2 ? '#fef3c7' : '#fee2e2'}; color: ${wf.difficulty === 1 ? '#1e40af' : wf.difficulty === 2 ? '#92400e' : '#991b1b'}; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                        Level ${wf.difficulty}
+                      </div>
                     </div>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.6;">${wf.description}</p>
                   </div>
-                  <button onclick="window.copyWorkflowJSON('${wf.json.replace(/'/g, "\\'")}')" style="
-                    padding: 8px 16px;
-                    background: #667eea;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-size: 13px;
-                    font-weight: 600;
-                    white-space: nowrap;
-                    transition: background 0.3s;
-                  " onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
-                    📋 Copy JSON
-                  </button>
+                  <div style="display: flex; gap: 10px; margin-top: 16px;">
+                    <button onclick="window.copyWorkflowJSON('${wf.json.replace(/'/g, "\\'")}')" style="
+                      flex: 1;
+                      padding: 10px 12px;
+                      background: #667eea;
+                      color: white;
+                      border: none;
+                      border-radius: 6px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: background 0.3s;
+                    " onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                      📋 Copy JSON
+                    </button>
+                    <button onclick="window.downloadWorkflowJSON('${wf.title.replace(/'/g, "\\'")}', '${wf.json.replace(/'/g, "\\'")}')" style="
+                      flex: 1;
+                      padding: 10px 12px;
+                      background: #10b981;
+                      color: white;
+                      border: none;
+                      border-radius: 6px;
+                      cursor: pointer;
+                      font-size: 12px;
+                      font-weight: 600;
+                      transition: background 0.3s;
+                    " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                      ⬇️ Download
+                    </button>
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
           </div>
           
           <!-- Setup Guides -->
@@ -1037,6 +1070,24 @@ window.copyWorkflowJSON = function(json) {
     });
   } catch (error) {
     alert('Error copying to clipboard: ' + error.message);
+  }
+};
+
+/**
+ * Download workflow JSON as file
+ */
+window.downloadWorkflowJSON = function(fileName, json) {
+  try {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(json));
+    element.setAttribute('download', `${fileName.replace(/\s+/g, '-').toLowerCase()}.json`);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    alert('✓ Workflow downloaded! Import it in N8N');
+  } catch (error) {
+    alert('Error downloading file: ' + error.message);
   }
 };
 
