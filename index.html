@@ -584,8 +584,6 @@
 
     <!-- Bootstrapping: load config, then app -->
     <script type="module">
-        const isLocalEnv = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-
         const loadLocalConfig = () =>
             new Promise((resolve, reject) => {
                 const script = document.createElement('script');
@@ -596,9 +594,14 @@
             });
 
         const loadRemoteConfig = async () => {
-            const response = await fetch('/api/config');
-            if (!response.ok) throw new Error('Remote config endpoint returned an error');
+            const response = await fetch('/api/config', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('Remote config endpoint returned an error');
+            }
             const { url, anonKey } = await response.json();
+            if (!url || !anonKey) {
+                throw new Error('Supabase env vars are missing on the server');
+            }
             window.SUPABASE_URL = url;
             window.SUPABASE_ANON_KEY = anonKey;
         };
@@ -609,18 +612,25 @@
                 app.innerHTML = `
                     <div style="padding: 32px; text-align: center; color: #ef4444;">
                         ⚠️ ${message}<br/>
-                        Please verify your environment variables or local config.js file.
+                        Verify Vercel environment variables or your local config.js file.
                     </div>
                 `;
             }
         };
 
+        const isLocalEnv = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
         const bootstrap = async () => {
             try {
-                if (isLocalEnv) {
-                    await loadLocalConfig();
-                } else {
+                try {
                     await loadRemoteConfig();
+                } catch (remoteError) {
+                    if (isLocalEnv) {
+                        console.warn('Remote config failed locally, falling back to config.js', remoteError);
+                        await loadLocalConfig();
+                    } else {
+                        throw remoteError;
+                    }
                 }
                 await import('./js/app.js');
             } catch (error) {
