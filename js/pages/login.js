@@ -1,4 +1,9 @@
-import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../services/supabase.js';
+// login.js — imports aliased to avoid collisions
+import {
+  signInWithGoogle as signInWithGoogleAuth,
+  signInWithEmail as signInWithEmailAuth,
+  signUpWithEmail as signUpWithEmailAuth
+} from '../services/supabase.js';
 import { navigateTo } from '../router.js';
 import { setCurrentUser } from '../state.js';
 
@@ -58,7 +63,7 @@ export function renderLoginScreen() {
   };
 
   document.getElementById('btn-google-login').addEventListener('click', async () => {
-    await signInWithGoogle();
+    await signInWithGoogleAuth();
   });
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -67,7 +72,7 @@ export function renderLoginScreen() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const result = await signInWithEmail(email, password);
+    const result = await signInWithEmailAuth(email, password);
 
     if (result.success) {
       setCurrentUser(result.data.user);
@@ -88,7 +93,7 @@ export function renderLoginScreen() {
     }
 
     setLoading(true);
-    const result = await signUpWithEmail(email, password);
+    const result = await signUpWithEmailAuth(email, password);
 
     if (result.success) {
       if (result.data.user) {
@@ -104,4 +109,3 @@ export function renderLoginScreen() {
     }
   });
 }
-
