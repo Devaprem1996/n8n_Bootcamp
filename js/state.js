@@ -21,10 +21,11 @@ export const appState = {
 
 function createEmptyProgress() {
     return {
-        completedTasks: Array(9).fill(false),
+        completedTasks: [],
         taskNotes: {},
         progressPercent: 0,
-        cohort: 'default'
+        cohort: 'default',
+        isLoaded: false
     };
 }
 
