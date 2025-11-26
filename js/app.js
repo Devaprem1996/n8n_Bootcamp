@@ -1,7 +1,7 @@
 import { initSupabase, getCurrentUser } from './services/supabase.js';
 import { handleRoute, navigateTo } from './router.js';
 import { setCurrentUser } from './state.js';
-import { getCurrentUser } from "./supabase.js";
+
 import { navigateTo, handleRoute } from "./router.js";
 
 async function initApp() {
