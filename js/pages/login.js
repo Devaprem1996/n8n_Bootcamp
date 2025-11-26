@@ -1,4 +1,4 @@
-import { signInWithEmail, signUpWithEmail } from '../services/supabase.js';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../services/supabase.js';
 import { navigateTo } from '../router.js';
 import { setCurrentUser } from '../state.js';
 
@@ -104,3 +104,4 @@ export function renderLoginScreen() {
     }
   });
 }
+
