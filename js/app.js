@@ -36,5 +36,3 @@ async function initApp() {
 // Initialize
 document.addEventListener('DOMContentLoaded', initApp);
 
-// Expose navigation for legacy onclicks if needed (though we try to avoid them)
-window.navigateTo = navigateTo;

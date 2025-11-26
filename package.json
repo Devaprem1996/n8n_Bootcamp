@@ -4,7 +4,7 @@
   "description": "N8N Bootcamp Progress Tracker with Supabase + Google Auth",
   "type": "module",
   "scripts": {
-    "dev": "python -m http.server 8000",
+    "dev": "live-server --port=8000",
     "deploy:vercel": "vercel",
     "deploy:netlify": "netlify deploy"
   },
@@ -19,5 +19,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
   }
 }

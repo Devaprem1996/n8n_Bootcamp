@@ -47,10 +47,10 @@ export async function renderDashboard(category) {
 
       <!-- Navigation Tabs -->
       <div class="tabs-nav">
-        <button class="tab-btn ${category === 'n8n' ? 'active' : ''}" onclick="window.location.hash='#/n8n'">N8N</button>
-        <button class="tab-btn ${category === 'vibe-coding' ? 'active' : ''}" onclick="window.location.hash='#/vibe-coding'">Vibe Coding</button>
-        <button class="tab-btn ${category === 'prompt-engineering' ? 'active' : ''}" onclick="window.location.hash='#/prompt-engineering'">Prompt Eng</button>
-        <button class="tab-btn ${category === 'ai-developments-tools' ? 'active' : ''}" onclick="window.location.hash='#/ai-developments-tools'">AI Tools</button>
+        <button class="tab-btn ${category === 'n8n' ? 'active' : ''}" data-path="/n8n">N8N</button>
+        <button class="tab-btn ${category === 'vibe-coding' ? 'active' : ''}" data-path="/vibe-coding">Vibe Coding</button>
+        <button class="tab-btn ${category === 'prompt-engineering' ? 'active' : ''}" data-path="/prompt-engineering">Prompt Eng</button>
+        <button class="tab-btn ${category === 'ai-developments-tools' ? 'active' : ''}" data-path="/ai-developments-tools">AI Tools</button>
       </div>
 
       <div class="progress-section">
@@ -92,21 +92,14 @@ export async function renderDashboard(category) {
   document.getElementById('btn-admin')?.addEventListener('click', () => navigateTo('/admin'));
 
   // Tab navigation
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      // Extract path from onclick or just use the text content mapped to route
-      // For simplicity, let's just use the router navigateTo
-      // But wait, the HTML onclicks above are using hash which is not what we want with our router.
-      // Let's fix the HTML generation above to not use onclick attributes but data attributes.
-    });
+  document.querySelector('.tabs-nav').addEventListener('click', (e) => {
+    if (e.target.matches('.tab-btn')) {
+      const path = e.target.dataset.path;
+      if (path) {
+        navigateTo(path);
+      }
+    }
   });
-
-  // Re-attach tab listeners properly
-  const tabs = document.querySelectorAll('.tab-btn');
-  tabs[0].onclick = () => navigateTo('/n8n');
-  tabs[1].onclick = () => navigateTo('/vibe-coding');
-  tabs[2].onclick = () => navigateTo('/prompt-engineering');
-  tabs[3].onclick = () => navigateTo('/ai-developments-tools');
 
   // Checkbox listeners
   curriculum.days.forEach((_, index) => {
