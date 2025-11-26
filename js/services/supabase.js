@@ -134,7 +134,6 @@ export async function signOut() {
 export async function getCurrentUser() {
   try {
     const sb = await initSupabase();
-
     const { data: sessionData } = await sb.auth.getSession();
     if (!sessionData?.session) return null;
 
@@ -142,12 +141,38 @@ export async function getCurrentUser() {
     const authUser = userData?.user;
     if (!authUser) return null;
 
-    // Fetch profile (role, resume_url, full_name, email, cohort)
-    const { data: profile } = await sb
-      .from("profiles")
-      .select("role, resume_url, full_name, email, cohort")
-      .eq("id", authUser.id)
-      .maybeSingle();
+    // Try the preferred select first (with cohort)
+    const preferredSelect = "role, resume_url, full_name, email, cohort";
+    let profile = null;
+
+    const trySelect = async (sel) => {
+      const res = await sb.from("profiles").select(sel).eq("id", authUser.id);
+      // Supabase JS returns { data, error }
+      if (res.error) throw res.error;
+      // data may be an array
+      if (Array.isArray(res.data)) return res.data[0] ?? null;
+      return res.data ?? null;
+    };
+
+    try {
+      profile = await trySelect(preferredSelect);
+    } catch (err) {
+      // If the error suggests a missing column, try a fallback select
+      console.warn(
+        "Profile select (with cohort) failed. Error:",
+        err?.message || err
+      );
+      // Attempt fallback without cohort (safer)
+      try {
+        profile = await trySelect("role, resume_url, full_name, email");
+      } catch (err2) {
+        console.error(
+          "Fallback profile select also failed:",
+          err2?.message || err2
+        );
+        profile = null;
+      }
+    }
 
     return {
       ...authUser,
@@ -162,6 +187,7 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
 
 // ============================================
 // PROGRESS SAVE / LOAD
