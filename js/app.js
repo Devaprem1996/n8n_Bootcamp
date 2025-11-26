@@ -5,7 +5,21 @@ import { setCurrentUser } from './state.js';
 async function initApp() {
     console.log('🚀 Initializing Vidana Bootcamp Hub...');
 
-    await initSupabase();
+    try {
+        await initSupabase();
+    } catch (error) {
+        console.error('❌ Failed to initialize Supabase:', error);
+        const app = document.getElementById('app');
+        if (app) {
+            app.innerHTML = `
+                <div style="padding: 32px; text-align: center; color: #ef4444;">
+                    ⚠️ ${error.message || 'Unable to connect to Supabase.'}<br/>
+                    Confirm that SUPABASE_URL and SUPABASE_ANON_KEY are configured.
+                </div>
+            `;
+        }
+        return;
+    }
 
     const user = await getCurrentUser();
     if (user) {

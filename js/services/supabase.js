@@ -3,17 +3,41 @@
  * Handles authentication and database operations
  */
 
-// Get credentials from window object (set in index.html or via environment)
-const SUPABASE_URL = window.SUPABASE_URL || 'https://bovtrdrmivmyglafpojx.supabase.co';
-const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvdnRyZHJtaXZteWdsYWZwb2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDk0MzcsImV4cCI6MjA3OTU4NTQzN30.P2eUq0MxyvX_5O0i4B1gjwjcvjbf9vy5lYl05AETHx8';
-
 let supabase = null;
+let supabaseConfigPromise = null;
+
+async function ensureSupabaseConfig() {
+    if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+        return;
+    }
+
+    if (!supabaseConfigPromise) {
+        supabaseConfigPromise = (async () => {
+            const response = await fetch('/api/config', { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error('Unable to load Supabase configuration from server');
+            }
+            const { url, anonKey } = await response.json();
+            if (!url || !anonKey) {
+                throw new Error('Supabase configuration is incomplete on the server');
+            }
+            window.SUPABASE_URL = url;
+            window.SUPABASE_ANON_KEY = anonKey;
+        })().catch(err => {
+            supabaseConfigPromise = null;
+            throw err;
+        });
+    }
+
+    return supabaseConfigPromise;
+}
 
 // Initialize on first use
 export async function initSupabase() {
     if (!supabase) {
+        await ensureSupabaseConfig();
         const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/+esm');
-        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabase = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
     }
     return supabase;
 }
@@ -22,7 +46,24 @@ export async function initSupabase() {
 // AUTHENTICATION
 // ============================================
 
+export async function signInWithGoogle() {
+    try {
+        const sb = await initSupabase();
+        const { data, error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + '/',
+                scopes: 'openid profile email'
+            }
+        });
 
+        if (error) throw error;
+        return { success: true, data };
+    } catch (err) {
+        console.error('❌ Google login error:', err);
+        return { success: false, error: err.message };
+    }
+}
 
 export async function signUpWithEmail(email, password) {
     try {

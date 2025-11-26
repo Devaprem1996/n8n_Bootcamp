@@ -581,46 +581,7 @@
 
 <body>
     <div id="app"></div>
-
-    <!-- Bootstrapping: load config, then app -->
-    <script type="module">
-        const loadRemoteConfig = async () => {
-            const response = await fetch('/api/config', { cache: 'no-store' });
-            if (!response.ok) {
-                throw new Error('Remote config endpoint returned an error');
-            }
-            const { url, anonKey } = await response.json();
-            if (!url || !anonKey) {
-                throw new Error('Supabase env vars are missing on the server');
-            }
-            window.SUPABASE_URL = url;
-            window.SUPABASE_ANON_KEY = anonKey;
-        };
-
-        const showConfigError = (message) => {
-            const app = document.getElementById('app');
-            if (app) {
-                app.innerHTML = `
-                    <div style="padding: 32px; text-align: center; color: #ef4444;">
-                        ⚠️ ${message}<br/>
-                        Verify that SUPABASE_URL and SUPABASE_ANON_KEY are set in your hosting environment.
-                    </div>
-                `;
-            }
-        };
-
-        const bootstrap = async () => {
-            try {
-                await loadRemoteConfig();
-                await import('./js/app.js');
-            } catch (error) {
-                console.error('Failed to bootstrap application:', error);
-                showConfigError(error.message);
-            }
-        };
-
-        bootstrap();
-    </script>
+    <script type="module" src="js/app.js"></script>
 </body>
 
 </html>
