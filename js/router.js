@@ -1,18 +1,31 @@
 import { appState, getCurrentUser, setCurrentCategory } from './state.js';
-import { renderLandingPage } from './pages/landing.js';
-import { renderLoginScreen } from './pages/login.js';
-import { renderDashboard } from './pages/dashboard.js';
-import { renderAdminDashboard } from './pages/admin.js';
+
 
 const routes = {
-    '/': { protected: false, render: renderLandingPage },
-    '/login': { protected: false, render: renderLoginScreen },
-    '/dashboard': { protected: true, render: () => renderDashboard('n8n') }, // Default to n8n
-    '/n8n': { protected: true, render: () => { setCurrentCategory('n8n'); renderDashboard('n8n'); } },
-    '/vibe-coding': { protected: true, render: () => { setCurrentCategory('vibe-coding'); renderDashboard('vibe-coding'); } },
-    '/prompt-engineering': { protected: true, render: () => { setCurrentCategory('prompt-engineering'); renderDashboard('prompt-engineering'); } },
-    '/ai-developments-tools': { protected: true, render: () => { setCurrentCategory('ai-developments-tools'); renderDashboard('ai-developments-tools'); } },
-    '/admin': { protected: true, adminOnly: true, render: renderAdminDashboard }
+  "/": {
+    protected: false,
+    render: async () =>
+      (await import("./pages/landing.js")).renderLandingPage(),
+  },
+  "/login": {
+    protected: false,
+    render: async () => (await import("./pages/login.js")).renderLoginScreen(),
+  },
+  "/dashboard": {
+    protected: true,
+    render: async () =>
+      (await import("./pages/dashboard.js")).renderDashboard("n8n"),
+  },
+  
+    '/prompt-engineering': { protected: true, render: async () => (await import('./pages/prompt-engineering.page.js')).renderPromptEngineeringPage() },
+  
+    '/vibe-coding': { protected: true, render: async () => (await import('./pages/vibe-coding.page.js')).renderVibeCodingPage() },
+  
+    '/ai-tools': { protected: true, render: async () => (await import('./pages/ai-tools.page.js')).renderAIToolsPage() },
+  
+    '/n8n': { protected: true, render: async () => (await import('./pages/n8n.page.js')).renderN8NPage() },
+  
+  '/admin': { protected: true, adminOnly: true, render: async () => (await import('./pages/admin.js')).renderAdminDashboard() },
 };
 
 export function navigateTo(path) {
@@ -20,24 +33,52 @@ export function navigateTo(path) {
     handleRoute(path);
 }
 
-export function handleRoute(path) {
-    const route = routes[path] || routes['/'];
-    const user = getCurrentUser();
+export async function handleRoute(path) {
+  try {
+    // Normalize (remove trailing slash)
+    path = path.split("?")[0].replace(/\/+$/, "") || "/";
 
+    const route = routes[path] || routes["/"];
+
+    // Show loading UI (optional)
+    const app = document.querySelector("#app");
+    if (app) app.innerHTML = `<div class="loading">Loading...</div>`;
+
+    // -----------------------------
+    // 1. Load user (always async!)
+    // -----------------------------
+    const user = await getCurrentUser();
+
+    // -----------------------------
+    // 2. Route protection
+    // -----------------------------
     if (route.protected && !user) {
-        console.log('🔒 Redirecting to login');
-        navigateTo('/login');
-        return;
+      return navigateTo("/login");
     }
 
-    if (route.adminOnly && user?.role !== 'admin') {
-        console.log('🔒 Admin only area');
-        navigateTo('/dashboard');
-        return;
+    if (route.adminOnly && user?.role !== "admin") {
+      return navigateTo("/dashboard");
     }
 
-    route.render();
+    // -----------------------------
+    // 3. Render the page (lazy render)
+    // -----------------------------
+    await route.render();
+  } catch (err) {
+    console.error("Route error:", err);
+
+    const app = document.querySelector("#app");
+    if (app) {
+      app.innerHTML = `
+        <div class="error-screen">
+          <h2>Something went wrong</h2>
+          <p>${err.message || "Unknown error"}</p>
+        </div>
+      `;
+    }
+  }
 }
+
 
 // Handle browser back/forward
 window.onpopstate = () => {

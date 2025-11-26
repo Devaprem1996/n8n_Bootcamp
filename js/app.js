@@ -6,7 +6,21 @@ async function initApp() {
     console.log('🚀 Initializing Vidana Bootcamp Hub...');
 
     try {
-        await initSupabase();
+      await initSupabase();
+      // inside initApp after initSupabase()
+      window.__onAuthChanged = (user) => {
+        if (user) {
+          // fetch full profile + role with getCurrentUser() from services
+          (async () => {
+            const full = await getCurrentUser(); // service function
+            if (full) setCurrentUser(full);
+            handleRoute(window.location.pathname);
+          })();
+        } else {
+          setCurrentUser(null);
+          handleRoute("/login");
+        }
+      };
     } catch (error) {
         console.error('❌ Failed to initialize Supabase:', error);
         const app = document.getElementById('app');

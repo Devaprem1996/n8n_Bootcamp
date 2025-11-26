@@ -23,7 +23,16 @@ export async function renderDashboard(category) {
     return;
   }
   
-  const curriculum = CURRICULA[category];
+  const curriculum = CURRICULA[category] || {
+    title: "Unknown",
+    days: [],
+    resources: { youtube: [], workflows: [] },
+    totalHours: 0,
+    totalWorkflows: 0,
+    totalProjects: 0,
+    keyDates: [],
+  };
+
   if (!curriculum) {
       navigateTo('/dashboard');
       return;

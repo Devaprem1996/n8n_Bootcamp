@@ -6,40 +6,56 @@
 let supabase = null;
 let supabaseConfigPromise = null;
 
+// -------------------------------
+// LOAD SUPABASE CONFIG
+// -------------------------------
 async function ensureSupabaseConfig() {
-    if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
-        return;
-    }
+  if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) return;
 
-    if (!supabaseConfigPromise) {
-        supabaseConfigPromise = (async () => {
-            const response = await fetch('/api/config', { cache: 'no-store' });
-            if (!response.ok) {
-                throw new Error('Unable to load Supabase configuration from server');
-            }
-            const { url, anonKey } = await response.json();
-            if (!url || !anonKey) {
-                throw new Error('Supabase configuration is incomplete on the server');
-            }
-            window.SUPABASE_URL = url;
-            window.SUPABASE_ANON_KEY = anonKey;
-        })().catch(err => {
-            supabaseConfigPromise = null;
-            throw err;
-        });
-    }
+  if (!supabaseConfigPromise) {
+    supabaseConfigPromise = (async () => {
+      const response = await fetch("/api/config", { cache: "no-store" });
 
-    return supabaseConfigPromise;
+      if (!response.ok) {
+        throw new Error("Unable to load Supabase configuration from server");
+      }
+
+      const { url, anonKey } = await response.json();
+      if (!url || !anonKey) {
+        throw new Error("Supabase configuration is incomplete on the server");
+      }
+
+      window.SUPABASE_URL = url;
+      window.SUPABASE_ANON_KEY = anonKey;
+    })().catch((err) => {
+      supabaseConfigPromise = null;
+      throw err;
+    });
+  }
+
+  return supabaseConfigPromise;
 }
 
-// Initialize on first use
+// -------------------------------
+// INIT SUPABASE
+// -------------------------------
 export async function initSupabase() {
-    if (!supabase) {
-        await ensureSupabaseConfig();
-        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/+esm');
-        supabase = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-    }
-    return supabase;
+  if (!supabase) {
+    await ensureSupabaseConfig();
+
+    const { createClient } = await import(
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/+esm"
+    );
+
+    supabase = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+    // OAuth redirect auth state listener
+    supabase.auth.onAuthStateChange((event, session) => {
+      window.__onAuthChanged?.(session?.user ?? null);
+    });
+  }
+
+  return supabase;
 }
 
 // ============================================
@@ -47,226 +63,223 @@ export async function initSupabase() {
 // ============================================
 
 export async function signInWithGoogle() {
-    try {
-        const sb = await initSupabase();
-        const { data, error } = await sb.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + '/',
-                scopes: 'openid profile email'
-            }
-        });
+  try {
+    const sb = await initSupabase();
+    const { data, error } = await sb.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/",
+        scopes: "openid profile email",
+      },
+    });
 
-        if (error) throw error;
-        return { success: true, data };
-    } catch (err) {
-        console.error('❌ Google login error:', err);
-        return { success: false, error: err.message };
-    }
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("❌ Google login error:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 export async function signUpWithEmail(email, password) {
-    try {
-        const sb = await initSupabase();
-        const { data, error } = await sb.auth.signUp({
-            email,
-            password,
-            options: { emailRedirectTo: window.location.origin }
-        });
+  try {
+    const sb = await initSupabase();
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
 
-        if (error) throw error;
-        return { success: true, data };
-    } catch (err) {
-        console.error('❌ Sign up error:', err);
-        return { success: false, error: err.message };
-    }
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("❌ Sign up error:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 export async function signInWithEmail(email, password) {
-    try {
-        const sb = await initSupabase();
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  try {
+    const sb = await initSupabase();
+    const { data, error } = await sb.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-        if (error) throw error;
-        return { success: true, data };
-    } catch (err) {
-        console.error('❌ Sign in error:', err);
-        return { success: false, error: err.message };
-    }
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error("❌ Sign in error:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 export async function signOut() {
-    try {
-        const sb = await initSupabase();
-        const { error } = await sb.auth.signOut();
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error('❌ Sign out error:', error);
-        return { success: false, error: error.message };
-    }
+  try {
+    const sb = await initSupabase();
+    const { error } = await sb.auth.signOut();
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Sign out error:", error);
+    return { success: false, error: error.message };
+  }
 }
+
+// ============================================
+// USER + PROFILE
+// ============================================
 
 export async function getCurrentUser() {
-    try {
-        const sb = await initSupabase();
-        const { data: { session }, error: sessionError } = await sb.auth.getSession();
+  try {
+    const sb = await initSupabase();
 
-        if (sessionError || !session) return null;
+    const { data: sessionData } = await sb.auth.getSession();
+    if (!sessionData?.session) return null;
 
-        const { data: { user }, error: userError } = await sb.auth.getUser();
-        if (userError) throw userError;
+    const { data: userData } = await sb.auth.getUser();
+    const authUser = userData?.user;
+    if (!authUser) return null;
 
-        // Fetch profile to get role
-        const { data: profile } = await sb
-            .from('profiles')
-            .select('role, resume_url')
-            .eq('id', user.id)
-            .single();
+    // Fetch profile (role, resume_url, full_name, email, cohort)
+    const { data: profile } = await sb
+      .from("profiles")
+      .select("role, resume_url, full_name, email, cohort")
+      .eq("id", authUser.id)
+      .maybeSingle();
 
-        return { ...user, ...profile };
-    } catch (e) {
-        console.error('❌ Get user error:', e);
-        return null;
-    }
+    return {
+      ...authUser,
+      email: profile?.email ?? authUser.email,
+      resume_url: profile?.resume_url ?? null,
+      full_name: profile?.full_name ?? null,
+      cohort: profile?.cohort ?? "default",
+      role: profile?.role ?? "intern",
+    };
+  } catch (e) {
+    console.error("❌ Get user error:", e);
+    return null;
+  }
 }
 
 // ============================================
-// DATABASE OPERATIONS
+// PROGRESS SAVE / LOAD
 // ============================================
 
-/**
- * Save intern progress for a specific category
- */
 export async function saveProgress(internId, category, progressData) {
-    try {
-        const sb = await initSupabase();
+  try {
+    const sb = await initSupabase();
 
-        // Upsert progress based on intern_id and category
-        const { data, error } = await sb
-            .from('intern_progress')
-            .upsert({
-                intern_id: internId,
-                category: category,
-                user_email: progressData.email,
-                completed_tasks: progressData.completedTasks,
-                task_notes: progressData.taskNotes,
-                progress_percent: progressData.progressPercent,
-                cohort: progressData.cohort || 'default',
-                last_updated: new Date().toISOString()
-            }, { onConflict: 'intern_id, category' })
-            .select();
+    const payload = {
+      intern_id: internId,
+      category,
+      user_email: progressData.email,
+      completed_tasks: progressData.completedTasks ?? [],
+      task_notes: progressData.taskNotes ?? {},
+      progress_percent: progressData.progressPercent ?? 0,
+      cohort: progressData.cohort ?? "default",
+      last_updated: new Date().toISOString(),
+    };
 
-        if (error) throw error;
-        return { success: true, data };
+    const { data, error } = await sb
+      .from("intern_progress")
+      .upsert(payload, { onConflict: "intern_id, category" })
+      .select();
 
-    } catch (error) {
-        console.error('❌ Error saving progress:', error);
-        return { success: false, error: error.message };
-    }
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("❌ Error saving progress:", error);
+    return { success: false, error: error.message };
+  }
 }
 
-/**
- * Load intern progress for a specific category
- */
+// Load one category’s progress
 export async function loadProgress(internId, category) {
-    try {
-        const sb = await initSupabase();
-        const { data, error } = await sb
-            .from('intern_progress')
-            .select('*')
-            .eq('intern_id', internId)
-            .eq('category', category)
-            .single();
+  try {
+    const sb = await initSupabase();
 
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
+    const { data, error } = await sb
+      .from("intern_progress")
+      .select("*")
+      .eq("intern_id", internId)
+      .eq("category", category)
+      .maybeSingle();
 
-        if (data) {
-            return {
-                success: true,
-                data: {
-                    ...data,
-                    completedTasks: data.completed_tasks || [],
-                    taskNotes: data.task_notes || {},
-                    progressPercent: data.progress_percent || 0
-                }
-            };
-        }
+    if (error) throw error;
 
-        return { success: true, data: null };
-    } catch (error) {
-        console.error('❌ Error loading progress:', error);
-        return { success: false, error: error.message };
-    }
+    if (!data) return { success: true, data: null };
+
+    return {
+      success: true,
+      data: {
+        ...data,
+        completedTasks: data.completed_tasks ?? [],
+        taskNotes: data.task_notes ?? {},
+        progressPercent: data.progress_percent ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error("❌ Error loading progress:", error);
+    return { success: false, error: error.message };
+  }
 }
 
-/**
- * ADMIN: Get all interns progress
- */
+// ============================================
+// ADMIN: ALL PROGRESS (clean & correct version)
+// ============================================
+
 export async function getAllInternsProgress() {
-    try {
-        const sb = await initSupabase();
+  try {
+    const sb = await initSupabase();
 
-        // Get all profiles
-        const { data: profiles, error: profileError } = await sb
-            .from('profiles')
-            .select('*')
-            .eq('role', 'intern');
+    // Relational fetch: profiles + intern_progress[]
+    const { data, error } = await sb
+      .from("profiles")
+      .select(
+        "id, full_name, email, resume_url, role, cohort, intern_progress(*)"
+      )
+      .eq("role", "intern");
 
-        if (profileError) throw profileError;
+    if (error) throw error;
 
-        // Get all progress
-        const { data: progress, error: progressError } = await sb
-            .from('intern_progress')
-            .select('*');
-
-        if (progressError) throw progressError;
-
-        // Combine data
-        const combined = profiles.map(profile => {
-            const userProgress = progress.filter(p => p.intern_id === profile.id);
-            return {
-                ...profile,
-                progress: userProgress
-            };
-        });
-
-        return { success: true, data: combined };
-    } catch (error) {
-        console.error('❌ Error getting all interns:', error);
-        return { success: false, error: error.message };
-    }
+    return { success: true, data };
+  } catch (err) {
+    console.error("❌ Error loading interns progress:", err);
+    return { success: false, error: err.message };
+  }
 }
 
-/**
- * Upload Resume
- */
+// ============================================
+// FILE UPLOAD
+// ============================================
+
 export async function uploadResume(file, userId) {
-    try {
-        const sb = await initSupabase();
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${userId}/resume.${fileExt}`;
-        const filePath = `${fileName}`;
+  try {
+    const sb = await initSupabase();
 
-        const { error: uploadError } = await sb.storage
-            .from('resumes')
-            .upload(filePath, file, { upsert: true });
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${userId}/resume.${fileExt}`;
 
-        if (uploadError) throw uploadError;
+    const { error: uploadError } = await sb.storage
+      .from("resumes")
+      .upload(fileName, file, { upsert: true });
 
-        const { data: { publicUrl } } = sb.storage
-            .from('resumes')
-            .getPublicUrl(filePath);
+    if (uploadError) throw uploadError;
 
-        // Update profile
-        await sb
-            .from('profiles')
-            .update({ resume_url: publicUrl })
-            .eq('id', userId);
+    const {
+      data: { publicUrl },
+    } = sb.storage.from("resumes").getPublicUrl(fileName);
 
-        return { success: true, url: publicUrl };
-    } catch (error) {
-        console.error('❌ Error uploading resume:', error);
-        return { success: false, error: error.message };
-    }
+    await sb
+      .from("profiles")
+      .update({ resume_url: publicUrl })
+      .eq("id", userId);
+
+    return { success: true, url: publicUrl };
+  } catch (error) {
+    console.error("❌ Error uploading resume:", error);
+    return { success: false, error: error.message };
+  }
 }
