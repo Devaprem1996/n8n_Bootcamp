@@ -22,24 +22,7 @@ export async function initSupabase() {
 // AUTHENTICATION
 // ============================================
 
-export async function signInWithGoogle() {
-    try {
-        const sb = await initSupabase();
-        const { data, error } = await sb.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + '/',
-                scopes: 'openid profile email'
-            }
-        });
 
-        if (error) throw error;
-        return { success: true, data };
-    } catch (err) {
-        console.error('❌ Google login error:', err);
-        return { success: false, error: err.message };
-    }
-}
 
 export async function signUpWithEmail(email, password) {
     try {
