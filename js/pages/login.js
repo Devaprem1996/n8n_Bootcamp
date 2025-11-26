@@ -1,9 +1,8 @@
 // login.js — imports aliased to avoid collisions
-import {
-  signInWithGoogle as signInWithGoogleAuth,
-  signInWithEmail as signInWithEmailAuth,
-  signUpWithEmail as signUpWithEmailAuth
-} from '../services/supabase.js';
+// login.js
+import { signInWithGoogle as signInWithGoogleAuth } from '../services/supabase.js';
+await signInWithGoogleAuth();
+
 import { navigateTo } from '../router.js';
 import { setCurrentUser } from '../state.js';
 
