@@ -12,21 +12,21 @@ const routes = {
   "/": {
     protected: false,
     render: async () => {
-      const { renderLanding } = await import("./pages/landing.page.js");
+      const { renderLanding } = await import("/js/pages/landing.page.js");
       return renderLanding();
     },
   },
   "/login": {
     protected: false,
     render: async () => {
-      const { renderLoginScreen } = await import("./pages/login.page.js");
+      const { renderLoginScreen } = await import("/js/pages/login.page.js");
       return renderLoginScreen();
     },
   },
   "/dashboard": {
     protected: true,
     render: async () => {
-      const { renderDashboard } = await import("./pages/dashboard.page.js");
+      const { renderDashboard } = await import("/js/pages/dashboard.page.js");
       return renderDashboard();
     },
   },
@@ -34,24 +34,24 @@ const routes = {
   // Curriculums (lazy)
   "/n8n": {
     protected: true,
-    render: async () => (await import("./pages/n8n.page.js")).renderN8NPage(),
+    render: async () => (await import("/js/pages/n8n.page.js")).renderN8NPage(),
   },
   "/vibe-coding": {
     protected: true,
     render: async () =>
-      (await import("./pages/vibe-coding.page.js")).renderVibeCodingPage(),
+      (await import("/js/pages/vibe-coding.page.js")).renderVibeCodingPage(),
   },
   "/prompt-engineering": {
     protected: true,
     render: async () =>
       (
-        await import("./pages/prompt-engineering.page.js")
+        await import("/js/pages/prompt-engineering.page.js")
       ).renderPromptEngineeringPage(),
   },
   "/ai-tools": {
     protected: true,
     render: async () =>
-      (await import("./pages/ai-tools.page.js")).renderAIToolsPage(),
+      (await import("/js/pages/ai-tools.page.js")).renderAIToolsPage(),
   },
 
   // admin example route (replace with your actual admin page)
@@ -59,7 +59,7 @@ const routes = {
     protected: true,
     adminOnly: true,
     render: async () => {
-      const { renderAdmin } = await import("./pages/admin.page.js");
+      const { renderAdmin } = await import("/js/pages/admin.page.js");
       return renderAdmin();
     },
   },
@@ -68,7 +68,7 @@ const routes = {
   "/404": {
     protected: false,
     render: async () => {
-      const { renderNotFound } = await import("./pages/notfound.page.js");
+      const { renderNotFound } = await import("/js/pages/notfound.page.js");
       return renderNotFound();
     },
   },
