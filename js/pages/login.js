@@ -1,7 +1,9 @@
-// login.js — imports aliased to avoid collisions
 // login.js
-import { signInWithGoogle as signInWithGoogleAuth } from '../services/supabase.js';
-await signInWithGoogleAuth();
+import {
+  signInWithGoogle as supaSignInWithGoogle,
+  signInWithEmail as supaSignInWithEmail,
+  signUpWithEmail as supaSignUpWithEmail,
+} from '../services/supabase.js';
 
 import { navigateTo } from '../router.js';
 import { setCurrentUser } from '../state.js';
@@ -62,7 +64,7 @@ export function renderLoginScreen() {
   };
 
   document.getElementById('btn-google-login').addEventListener('click', async () => {
-    await signInWithGoogleAuth();
+    await supaSignInWithGoogle();
   });
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -71,7 +73,7 @@ export function renderLoginScreen() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const result = await signInWithEmailAuth(email, password);
+    const result = await supaSignInWithEmail(email, password);
 
     if (result.success) {
       setCurrentUser(result.data.user);
@@ -92,7 +94,7 @@ export function renderLoginScreen() {
     }
 
     setLoading(true);
-    const result = await signUpWithEmailAuth(email, password);
+    const result = await supaSignUpWithEmail(email, password);
 
     if (result.success) {
       if (result.data.user) {
