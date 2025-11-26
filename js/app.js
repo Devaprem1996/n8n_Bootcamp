@@ -1,6 +1,8 @@
 import { initSupabase, getCurrentUser } from './services/supabase.js';
 import { handleRoute, navigateTo } from './router.js';
 import { setCurrentUser } from './state.js';
+import { getCurrentUser } from "./supabase.js";
+import { navigateTo, handleRoute } from "./router.js";
 
 async function initApp() {
     console.log('🚀 Initializing Vidana Bootcamp Hub...');
@@ -8,19 +10,26 @@ async function initApp() {
     try {
       await initSupabase();
       // inside initApp after initSupabase()
-      window.__onAuthChanged = (user) => {
-        if (user) {
-          // fetch full profile + role with getCurrentUser() from services
-          (async () => {
-            const full = await getCurrentUser(); // service function
-            if (full) setCurrentUser(full);
-            handleRoute(window.location.pathname);
-          })();
-        } else {
-          setCurrentUser(null);
-          handleRoute("/login");
-        }
-      };
+     window.__onAuthChanged = async (supabaseUser) => {
+       try {
+         if (supabaseUser) {
+           // fetch profile and full user object
+           const full = await getCurrentUser();
+           if (full) {
+             setCurrentUser(full);
+           }
+           // If you use hash routing, ensure you navigate to the dashboard hash
+           navigateTo("/dashboard"); // or navigateTo('/#dashboard') depending on your router
+           // Also force handleRoute to render current route if your router reads location.hash
+           await handleRoute(window.location.hash.replace(/^#/, "") || "/");
+         } else {
+           setCurrentUser(null);
+           navigateTo("/login");
+         }
+       } catch (e) {
+         console.error("onAuthChanged handler error", e);
+       }
+     };
     } catch (error) {
         console.error('❌ Failed to initialize Supabase:', error);
         const app = document.getElementById('app');

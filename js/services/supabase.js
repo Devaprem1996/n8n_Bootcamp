@@ -65,10 +65,12 @@ export async function initSupabase() {
 export async function signInWithGoogle() {
   try {
     const sb = await initSupabase();
+    const redirectTo = window.location.origin + "/#dashboard"; // <- land on hash route
+
     const { data, error } = await sb.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/",
+        redirectTo,
         scopes: "openid profile email",
       },
     });
@@ -80,6 +82,7 @@ export async function signInWithGoogle() {
     return { success: false, error: err.message };
   }
 }
+
 
 export async function signUpWithEmail(email, password) {
   try {

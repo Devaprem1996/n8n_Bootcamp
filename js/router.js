@@ -36,6 +36,16 @@ export function navigateTo(path) {
 export async function handleRoute(path) {
   try {
     // Normalize (remove trailing slash)
+    //-----------------------------
+     if (!path) {
+       const rawHash = window.location.hash || "";
+       // support both "#/dashboard" and "#dashboard"
+       path = rawHash.replace(/^#\/?/, "") || window.location.pathname || "/";
+     }
+     // normalize leading slash
+    if (!path.startsWith("/")) path = "/" + path;
+
+      // remove query params and trailing slashes
     path = path.split("?")[0].replace(/\/+$/, "") || "/";
 
     const route = routes[path] || routes["/"];
