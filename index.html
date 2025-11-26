@@ -584,15 +584,6 @@
 
     <!-- Bootstrapping: load config, then app -->
     <script type="module">
-        const loadLocalConfig = () =>
-            new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = './config.js';
-                script.onload = resolve;
-                script.onerror = () => reject(new Error('Missing config.js for local development'));
-                document.head.appendChild(script);
-            });
-
         const loadRemoteConfig = async () => {
             const response = await fetch('/api/config', { cache: 'no-store' });
             if (!response.ok) {
@@ -612,26 +603,15 @@
                 app.innerHTML = `
                     <div style="padding: 32px; text-align: center; color: #ef4444;">
                         ⚠️ ${message}<br/>
-                        Verify Vercel environment variables or your local config.js file.
+                        Verify that SUPABASE_URL and SUPABASE_ANON_KEY are set in your hosting environment.
                     </div>
                 `;
             }
         };
 
-        const isLocalEnv = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-
         const bootstrap = async () => {
             try {
-                try {
-                    await loadRemoteConfig();
-                } catch (remoteError) {
-                    if (isLocalEnv) {
-                        console.warn('Remote config failed locally, falling back to config.js', remoteError);
-                        await loadLocalConfig();
-                    } else {
-                        throw remoteError;
-                    }
-                }
+                await loadRemoteConfig();
                 await import('./js/app.js');
             } catch (error) {
                 console.error('Failed to bootstrap application:', error);
