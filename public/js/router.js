@@ -1,6 +1,8 @@
 // router.js
+// router.js (top imports)
 import { getCurrentUser } from "./services/supabase.js";
-import { navigateTo as _noop } from "./router.noop.js"; // noop to satisfy bundlers if needed (optional)
+
+// static imports from public/js/pages (must be deployed under public/js/pages/)
 import { renderLoginScreen } from "/js/pages/login.page.js";
 import { renderLandingPage } from "/js/pages/landing.page.js";
 import { renderNotFound } from "/js/pages/notfound.page.js";
@@ -10,6 +12,7 @@ import { renderN8NPage } from "/js/pages/n8n.page.js";
 import { renderVibeCodingPage } from "/js/pages/vibe-coding.page.js";
 import { renderPromptEngineeringPage } from "/js/pages/prompt-engineering.page.js";
 import { renderAIToolsPage } from "/js/pages/ai-tools.page.js";
+
 
 /* -------------------------
    Route Definitions
@@ -140,6 +143,10 @@ export function navigateTo(path) {
       );
     }
   }
+}
+// expose for pages that call window.navigateTo(...) instead of importing
+if (typeof window !== 'undefined') {
+  window.navigateTo = navigateTo;
 }
 
 /* -------------------------
