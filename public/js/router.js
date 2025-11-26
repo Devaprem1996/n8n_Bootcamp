@@ -1,6 +1,19 @@
 // router.js
 import { getCurrentUser } from "./services/supabase.js";
 import { navigateTo as _noop } from "./router.noop.js"; // noop to satisfy bundlers if needed (optional)
+import { renderLoginScreen } from "/js/pages/login.page.js";
+import { renderLandingPage } from "/js/pages/landing.page.js";
+import { renderNotFound } from "/js/pages/notfound.page.js";
+import { renderDashboard } from "/js/pages/dashboard.page.js";
+import { renderAdmin } from "/js/pages/admin.page.js";
+import { renderN8NPage } from "/js/pages/n8n.page.js";
+import { renderVibeCodingPage } from "/js/pages/vibe-coding.page.js";
+import { renderPromptEngineeringPage } from "/js/pages/prompt-engineering.page.js";
+import { renderAIToolsPage } from "/js/pages/ai-tools.page.js";
+
+/* -------------------------
+   Route Definitions
+------------------------- */
 
 /**
  * ROUTES
@@ -11,66 +24,46 @@ import { navigateTo as _noop } from "./router.noop.js"; // noop to satisfy bundl
 const routes = {
   "/": {
     protected: false,
-    render: async () => {
-      const { renderLanding } = await import("/js/pages/landing.page.js");
-      return renderLanding();
-    },
+    render: async () => renderLandingPage(),
   },
   "/login": {
     protected: false,
-    render: async () => {
-      const { renderLoginScreen } = await import("/js/pages/login.page.js");
-      return renderLoginScreen();
-    },
+    render: async () => renderLoginScreen(),
   },
   "/dashboard": {
     protected: true,
-    render: async () => {
-      const { renderDashboard } = await import("/js/pages/dashboard.page.js");
-      return renderDashboard();
-    },
+    render: async () => renderDashboard(),
   },
 
   // Curriculums (lazy)
   "/n8n": {
     protected: true,
-    render: async () => (await import("/js/pages/n8n.page.js")).renderN8NPage(),
+    render: async () => renderN8NPage(),
   },
   "/vibe-coding": {
     protected: true,
-    render: async () =>
-      (await import("/js/pages/vibe-coding.page.js")).renderVibeCodingPage(),
+    render: async () => renderVibeCodingPage(),
   },
   "/prompt-engineering": {
     protected: true,
-    render: async () =>
-      (
-        await import("/js/pages/prompt-engineering.page.js")
-      ).renderPromptEngineeringPage(),
+    render: async () => renderPromptEngineeringPage(),
   },
   "/ai-tools": {
     protected: true,
-    render: async () =>
-      (await import("/js/pages/ai-tools.page.js")).renderAIToolsPage(),
+    render: async () => renderAIToolsPage(),
   },
 
   // admin example route (replace with your actual admin page)
   "/admin": {
     protected: true,
     adminOnly: true,
-    render: async () => {
-      const { renderAdmin } = await import("/js/pages/admin.page.js");
-      return renderAdmin();
-    },
+    render: async () => renderAdmin(),
   },
 
   // 404 fallback
   "/404": {
     protected: false,
-    render: async () => {
-      const { renderNotFound } = await import("/js/pages/notfound.page.js");
-      return renderNotFound();
-    },
+    render: async () => renderNotFound(),
   },
 };
 
