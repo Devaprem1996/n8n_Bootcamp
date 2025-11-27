@@ -1,7 +1,7 @@
 // pages/vibe-coding.page.js
 import { VIBE_CODING_CURRICULUM } from "../data/vibe-coding.js";
 import { pageTimeTracker, logEvent, flushQueue } from "../tracking.js";
-import { getCurrentUser } from "../supabase.js";
+import { getCurrentUser } from "../services/supabase.js";
 
 export function renderVibeCodingPage() {
   const app = document.querySelector("#app");
@@ -57,7 +57,7 @@ export function renderVibeCodingPage() {
               cohort: user?.cohort || "default",
             };
 
-            const supa = await import("../supabase.js");
+            const supa = await import("../services/supabase.js");
             if (typeof supa.saveProgress === "function") {
               const res = await supa.saveProgress(
                 userId,

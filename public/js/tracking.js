@@ -1,8 +1,8 @@
 // tracking.js
 // Lightweight tracking helper (batched, local-queue, offline tolerant).
-// Save as ./tracking.js and import { pageTimeTracker, logEvent, flushQueue } where needed.
+// Loaded from /js/tracking.js inside the public folder.
 
-import { initSupabase } from "./supabase.js"; // adjust path if your supabase service file is elsewhere
+import { initSupabase } from "./services/supabase.js";
 
 // small UUID generator (v4)
 function uuidv4() {
@@ -177,3 +177,4 @@ window.addEventListener("online", () => {
 window.addEventListener("offline", () => {
   flushQueue().catch(() => {});
 });
+

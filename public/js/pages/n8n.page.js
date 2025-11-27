@@ -1,7 +1,7 @@
 // pages/n8n.page.js
 import { N8N_CURRICULUM } from "../data/n8n.js";
 import { pageTimeTracker, logEvent, flushQueue } from "../tracking.js";
-import { getCurrentUser } from "../supabase.js";
+import { getCurrentUser } from "../services/supabase.js";
 
 export function renderN8NPage() {
   const app = document.querySelector("#app");
@@ -65,7 +65,7 @@ export function renderN8NPage() {
               cohort: user?.cohort || "default",
             };
 
-            const supa = await import("../supabase.js");
+            const supa = await import("../services/supabase.js");
             if (typeof supa.saveProgress === "function") {
               const res = await supa.saveProgress(
                 userId,

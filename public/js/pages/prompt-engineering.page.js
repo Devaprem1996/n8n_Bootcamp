@@ -1,7 +1,7 @@
 // pages/prompt-engineering.page.js
 import { PROMPT_ENG_CURRICULUM } from "../data/prompt-engineering.js";
 import { pageTimeTracker, logEvent, flushQueue } from "../tracking.js";
-import { getCurrentUser } from "../supabase.js";
+import { getCurrentUser } from "../services/supabase.js";
 
 export function renderPromptEngineeringPage() {
   const app = document.querySelector("#app");
@@ -65,7 +65,7 @@ export function renderPromptEngineeringPage() {
               cohort: user?.cohort || "default",
             };
 
-            const supa = await import("../supabase.js");
+            const supa = await import("../services/supabase.js");
             if (typeof supa.saveProgress === "function") {
               const res = await supa.saveProgress(
                 userId,

@@ -3,15 +3,15 @@
 import { getCurrentUser } from "./services/supabase.js";
 
 // static imports from public/js/pages (must be deployed under public/js/pages/)
-import { renderLoginScreen } from "/js/pages/login.page.js";
-import { renderLandingPage } from "/js/pages/landing.page.js";
-import { renderNotFound } from "/js/pages/notfound.page.js";
-import { renderDashboard } from "/js/pages/dashboard.page.js";
-import { renderAdmin } from "/js/pages/admin.page.js";
-import { renderN8NPage } from "/js/pages/n8n.page.js";
-import { renderVibeCodingPage } from "/js/pages/vibe-coding.page.js";
-import { renderPromptEngineeringPage } from "/js/pages/prompt-engineering.page.js";
-import { renderAIToolsPage } from "/js/pages/ai-tools.page.js";
+import { renderLoginScreen } from "./pages/login.js";
+import { renderLandingPage } from "./pages/landing.js";
+import { renderNotFound } from "./pages/notfound.page.js";
+import { renderDashboard } from "./pages/dashboard.js";
+import { renderAdminDashboard } from "./pages/admin.js";
+import { renderN8NPage } from "./pages/n8n.page.js";
+import { renderVibeCodingPage } from "./pages/vibe-coding.page.js";
+import { renderPromptEngineeringPage } from "./pages/prompt-engineering.page.js";
+import { renderAIToolsPage } from "./pages/ai-tools.page.js";
 
 
 /* -------------------------
@@ -60,7 +60,7 @@ const routes = {
   "/admin": {
     protected: true,
     adminOnly: true,
-    render: async () => renderAdmin(),
+    render: async () => renderAdminDashboard(),
   },
 
   // 404 fallback
@@ -189,9 +189,8 @@ export async function handleRoute(path) {
       app.innerHTML = `
         <div class="error-screen">
           <h2>Something went wrong</h2>
-          <pre style="white-space:pre-wrap">${
-            err && err.message ? err.message : String(err)
-          }</pre>
+          <pre style="white-space:pre-wrap">${err && err.message ? err.message : String(err)
+        }</pre>
         </div>
       `;
     }

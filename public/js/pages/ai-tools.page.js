@@ -1,7 +1,7 @@
 // pages/ai-tools.page.js
 import { AI_TOOLS_CURRICULUM } from "../data/ai-developments-tools.js";
 import { pageTimeTracker, logEvent, flushQueue } from "../tracking.js";
-import { getCurrentUser } from "../supabase.js";
+import { getCurrentUser } from "../services/supabase.js";
 
 export function renderAIToolsPage() {
   const app = document.querySelector("#app");
@@ -56,7 +56,7 @@ export function renderAIToolsPage() {
               cohort: user?.cohort || "default",
             };
 
-            const supa = await import("../supabase.js");
+            const supa = await import("../services/supabase.js");
             if (typeof supa.saveProgress === "function") {
               const res = await supa.saveProgress(
                 userId,
