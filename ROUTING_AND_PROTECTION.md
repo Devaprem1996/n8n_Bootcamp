@@ -61,23 +61,40 @@ const routes = {
 ### Primary Navigation Function
 
 ```javascript
-function navigateTo(path) {
-  const route = Object.values(routes).find(r => r.path === path);
-  
-  if (!route) {
-    console.error('Route not found:', path);
-    navigateTo('/');
-    return;
+function navigateTo(initialPath) {
+  let path = initialPath;
+  let route;
+
+  while (true) {
+    route = Object.values(routes).find(r => r.path === path);
+
+    if (!route) {
+      console.error('Route not found:', path);
+      if (path === '/') {
+        document.body.innerHTML = '<h1>Error: Application route configuration is broken.</h1>';
+        return;
+      }
+      path = '/'; // Fallback to landing page
+      continue;
+    }
+
+    if (route.protectedRoute && !appState.currentUser) {
+      console.log('Attempting to access protected route without auth');
+      path = '/login'; // Redirect to login
+      continue;
+    }
+
+    if (path === '/login' && appState.currentUser) {
+      console.log('Authenticated user on login page, redirecting to dashboard.');
+      path = '/dashboard'; // Redirect to dashboard
+      continue;
+    }
+
+    // If we are here, the route is valid and authorized.
+    break;
   }
-  
-  // Check if route is protected and user is not authenticated
-  if (route.protectedRoute && !appState.currentUser) {
-    console.log('Attempting to access protected route without auth');
-    navigateTo('/login');
-    return;
-  }
-  
-  appState.currentPage = Object.keys(routes).find(key => routes[key] === route);
+
+  setCurrentPage(Object.keys(routes).find(key => routes[key] === route));
   route.render();
 }
 ```
@@ -100,8 +117,8 @@ function requireAuth() {
 ### App State Object
 ```javascript
 const appState = {
-  currentUser: null,           // Currently logged-in user
-  currentPage: '/',      // Current page path
+  currentUser: null,           // Currently logged-in user object
+  currentPage: 'landing',      // Current page key (e.g., 'landing', 'login')
   userProgress: {              // User's bootcamp progress
     completedTasks: Array(9).fill(false),
     taskNotes: {},
