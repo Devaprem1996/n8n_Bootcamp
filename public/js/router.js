@@ -95,17 +95,50 @@ export function normalizePath(path) {
     return path.replace(/\/+/g, "/");
   }
 }
-
+// Read route from current location (prefers hash).
+// If the hash looks like an OAuth fragment (access_token, id_token, type=, error_description, etc.),
+// return a safe default ("/") — the app will then replace the hash with the intended route.
 // Read route from current location (prefers hash)
+// -------------------------
+// Replace existing getRouteFromLocation with this:
 export function getRouteFromLocation() {
   const rawHash = window.location.hash || "";
   if (rawHash) {
     const cleaned = rawHash.replace(/^#\/?/, "");
+    // If hash looks like an OAuth fragment (tokens or error) treat it as non-route:
+    if (
+      cleaned.includes("access_token=") ||
+      cleaned.includes("id_token=") ||
+      cleaned.includes("refresh_token=") ||
+      cleaned.includes("error_description=") ||
+      cleaned.includes("provider_token=") ||
+      cleaned.includes("type=")
+    ) {
+      return "/"; // safe default — app will replace hash to the intended route
+    }
     return cleaned ? (cleaned.startsWith("/") ? cleaned : "/" + cleaned) : "/";
   }
   const path = window.location.pathname || "/";
   return path;
 }
+
+// -------------------------
+// Add this helper (export it) somewhere after your navigateTo function:
+
+/**
+ * Replace any OAuth-style hash fragment with a clean route.
+ * Uses history.replaceState to avoid adding history entries.
+ * newRoute should be '/dashboard' or '/login' etc.
+ */
+export function replaceHashWithRoute(newRoute = "/") {
+  if (!newRoute.startsWith("/")) newRoute = "/" + newRoute;
+  const cleanHash = newRoute === "/" ? "#" : "#/" + newRoute.replace(/^\//, "");
+  // Keep pathname & search, only replace the hash
+  const base = window.location.href.split("#")[0];
+  const newHref = base.split("?")[0] + (window.location.search || "") + cleanHash;
+  history.replaceState({}, "", newHref);
+}
+
 
 /* -------------------------
    Navigation API

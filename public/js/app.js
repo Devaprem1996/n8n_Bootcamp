@@ -1,6 +1,7 @@
 import { initSupabase, getCurrentUser } from "./services/supabase.js";
-import { handleRoute, navigateTo } from "./router.js";
 import { setCurrentUser } from "./state.js";
+import { handleRoute, navigateTo, replaceHashWithRoute } from "./router.js";
+
 
 /**
  * Return a normalized route from current location.
@@ -65,6 +66,7 @@ async function initApp() {
   try {
     await initSupabase();
 
+
     // Called when Supabase auth state changes (OAuth redirect will trigger this)
     window.__onAuthChanged = async (supabaseUser) => {
       try {
@@ -78,11 +80,19 @@ async function initApp() {
             setCurrentUser(full);
           }
 
+          // If the URL contains an OAuth fragment (access_token...), replace it with a clean route
+          // so the route handler doesn't treat tokens as the route.
+          replaceHashWithRoute("/dashboard");
+
           // Navigate to dashboard and render current route (handles hash)
           navigateTo("/dashboard");
           await handleRoute(getRouteFromLocation());
         } else {
           setCurrentUser(null);
+
+          // Clean any OAuth fragment and replace with login route
+          replaceHashWithRoute("/login");
+
           navigateTo("/login");
           await handleRoute(getRouteFromLocation());
         }
@@ -90,6 +100,7 @@ async function initApp() {
         console.error("onAuthChanged handler error", e);
       }
     };
+
   } catch (error) {
     console.error("❌ Failed to initialize Supabase:", error);
     const app = document.getElementById("app");
@@ -115,6 +126,18 @@ async function initApp() {
     }
   } catch (e) {
     console.error("Error while getting current user on init:", e);
+  }
+
+  // sanitize initial OAuth fragments on load
+  const initialHash = window.location.hash || "";
+  if (
+    initialHash.includes("access_token=") ||
+    initialHash.includes("id_token=") ||
+    initialHash.includes("refresh_token=") ||
+    initialHash.includes("error_description=")
+  ) {
+    // replace with root — __onAuthChanged will later replace with dashboard/login
+    replaceHashWithRoute("/");
   }
 
   // Handle initial route (prefers hash if present)

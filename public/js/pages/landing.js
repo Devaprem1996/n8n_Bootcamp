@@ -1,8 +1,8 @@
 import { navigateTo } from '../router.js';
 
 export function renderLandingPage() {
-    const app = document.querySelector('#app');
-    app.innerHTML = `
+  const app = document.querySelector('#app');
+  app.innerHTML = `
     <div class="landing-container">
       <div class="animated-bg">
         <div class="orb orb-1"></div>
@@ -26,5 +26,5 @@ export function renderLandingPage() {
     </div>
   `;
 
-    document.getElementById('btn-get-started').addEventListener('click', () => navigateTo('/login'));
+  document.getElementById('btn-get-started').addEventListener('click', () => navigateTo('/login'));
 }
