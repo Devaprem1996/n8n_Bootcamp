@@ -49,7 +49,7 @@ export async function initSupabase() {
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.4/+esm"
     );
 
-    supabase = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // OAuth redirect auth state listener
     supabase.auth.onAuthStateChange((event, session) => {
