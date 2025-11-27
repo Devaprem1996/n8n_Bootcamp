@@ -33,3 +33,5 @@ yarn.lock
 .cache/
 temp/
 tmp/
+.vercel
+.env*.local
