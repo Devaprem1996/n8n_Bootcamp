@@ -11,9 +11,8 @@ export function renderAIToolsPage() {
       <header>
         <button id="backBtn" class="btn small">← Back</button>
         <h1>${escape(cur.title || "AI Dev Tools")}</h1>
-        <div class="meta">Hours: ${cur.totalHours ?? "-"} · Workflows: ${
-    cur.totalWorkflows ?? "-"
-  } · Projects: ${cur.totalProjects ?? "-"}</div>
+        <div class="meta">Hours: ${cur.totalHours ?? "-"} · Workflows: ${cur.totalWorkflows ?? "-"
+    } · Projects: ${cur.totalProjects ?? "-"}</div>
       </header>
 
       <main>
@@ -75,7 +74,7 @@ export function renderAIToolsPage() {
               type: "complete",
               props: { sessionId: tracker?.sessionId },
             });
-            await flushQueue().catch(() => {});
+            await flushQueue().catch(() => { });
 
             const btn = document.getElementById("markCompleteBtn");
             if (btn) {
@@ -113,8 +112,8 @@ function escape(s = "") {
   return String(s).replace(
     /[&<>"']/g,
     (m) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
-        m
-      ])
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
+      m
+    ])
   );
 }

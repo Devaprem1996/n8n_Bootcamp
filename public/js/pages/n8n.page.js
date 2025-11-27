@@ -11,21 +11,20 @@ export function renderN8NPage() {
       <header>
         <button id="backBtn" class="btn small">← Back</button>
         <h1>${escape(cur.title || "N8N Bootcamp")}</h1>
-        <div class="meta">Total Hours: ${cur.totalHours ?? "-"} · Workflows: ${
-    cur.totalWorkflows ?? "-"
-  }</div>
+        <div class="meta">Total Hours: ${cur.totalHours ?? "-"} · Workflows: ${cur.totalWorkflows ?? "-"
+    }</div>
       </header>
 
       <main>
         <h2>Key Dates</h2>
         <ul id="keydates">${(cur.keyDates || [])
-          .map(
-            (k) =>
-              `<li><strong>${escape(k.date)}</strong> — ${escape(
-                k.description
-              )}</li>`
-          )
-          .join("")}</ul>
+      .map(
+        (k) =>
+          `<li><strong>${escape(k.date)}</strong> — ${escape(
+            k.description
+          )}</li>`
+      )
+      .join("")}</ul>
 
         <h2>Modules</h2>
         <div id="modules">${renderModules(cur.days)}</div>
@@ -84,7 +83,7 @@ export function renderN8NPage() {
               type: "complete",
               props: { sessionId: tracker?.sessionId },
             });
-            await flushQueue().catch(() => {});
+            await flushQueue().catch(() => { });
 
             const btn = document.getElementById("markCompleteBtn");
             if (btn) {
@@ -109,11 +108,10 @@ function renderModules(days = []) {
       (d) => `
     <article class="module">
       <h3>Day ${d.day}: ${escape(d.title)}</h3>
-      <p><strong>Outcomes:</strong> ${
-        Array.isArray(d.outcomes)
+      <p><strong>Outcomes:</strong> ${Array.isArray(d.outcomes)
           ? escape(d.outcomes.join("; "))
           : escape(d.outcomes || "")
-      }</p>
+        }</p>
       <p><strong>Homework:</strong> ${escape(d.homework || "")}</p>
     </article>`
     )
@@ -124,8 +122,8 @@ function escape(s = "") {
   return String(s).replace(
     /[&<>"']/g,
     (m) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
-        m
-      ])
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
+      m
+    ])
   );
 }

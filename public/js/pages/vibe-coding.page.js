@@ -76,7 +76,7 @@ export function renderVibeCodingPage() {
               type: "complete",
               props: { sessionId: tracker?.sessionId },
             });
-            await flushQueue().catch(() => {});
+            await flushQueue().catch(() => { });
 
             const btn = document.getElementById("markCompleteBtn");
             if (btn) {
@@ -112,8 +112,8 @@ function escape(s = "") {
   return String(s).replace(
     /[&<>"']/g,
     (m) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
-        m
-      ])
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
+      m
+    ])
   );
 }

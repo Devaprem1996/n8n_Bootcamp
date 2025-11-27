@@ -29,7 +29,7 @@ function enqueueEvent(ev) {
   eventQueue.push(ev);
   persistQueue();
   // flush earlier if queue grows
-  if (eventQueue.length >= 12) flushQueue().catch(() => {});
+  if (eventQueue.length >= 12) flushQueue().catch(() => { });
 }
 
 // flush queue to Supabase (batched)
@@ -138,7 +138,7 @@ export function pageTimeTracker({ userId, page }) {
 
   // periodic flush every 20s (background)
   const interval = setInterval(() => {
-    flushQueue().catch(() => {});
+    flushQueue().catch(() => { });
   }, 20000);
 
   return {
@@ -168,13 +168,13 @@ export function enqueueActivityLog({ userId, page, duration_seconds }) {
 
 // try an initial flush on load if network available
 if (navigator.onLine) {
-  flushQueue().catch(() => {});
+  flushQueue().catch(() => { });
 }
 
 window.addEventListener("online", () => {
-  flushQueue().catch(() => {});
+  flushQueue().catch(() => { });
 });
 window.addEventListener("offline", () => {
-  flushQueue().catch(() => {});
+  flushQueue().catch(() => { });
 });
 

@@ -21,13 +21,13 @@ export function renderPromptEngineeringPage() {
       <article class="page__body">
         <h2>Key Dates</h2>
         <ul class="keydates">${(Array.isArray(cur.keyDates) ? cur.keyDates : [])
-          .map(
-            (k) =>
-              `<li><strong>${escape(k.date)}</strong> — ${escape(
-                k.description
-              )}</li>`
-          )
-          .join("")}</ul>
+      .map(
+        (k) =>
+          `<li><strong>${escape(k.date)}</strong> — ${escape(
+            k.description
+          )}</li>`
+      )
+      .join("")}</ul>
 
         <h2>Curriculum</h2>
         <div id="days">${renderDays(cur.days)}</div>
@@ -84,7 +84,7 @@ export function renderPromptEngineeringPage() {
               type: "complete",
               props: { sessionId: tracker?.sessionId },
             });
-            await flushQueue().catch(() => {});
+            await flushQueue().catch(() => { });
 
             const btn = document.getElementById("markCompleteBtn");
             if (btn) {
@@ -128,9 +128,9 @@ function escapeHtml(s = "") {
   return String(s).replace(
     /[&<>"']/g,
     (m) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
-        m
-      ])
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[
+      m
+    ])
   );
 }
 function escape(s = "") {
